@@ -18,6 +18,7 @@ struct IrResult {
 
 struct SchwarzschildLenseResult {
     float varphitilde;
+    float phif;
     bool ccw;
     int status;
 };

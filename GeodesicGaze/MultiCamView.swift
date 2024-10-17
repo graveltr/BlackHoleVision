@@ -25,16 +25,6 @@ struct MultiCamView: UIViewControllerRepresentable {
         }
         
         func processCameraPixelBuffers(frontCameraPixelBuffer: CVPixelBuffer, backCameraPixelBuffer: CVPixelBuffer) {
-            /*
-            DispatchQueue.main.async {
-                self.mixer.mix(frontCameraPixelBuffer: frontCameraPixelBuffer,
-                               backCameraPixelBuffer: backCameraPixelBuffer,
-                               in: self.mtkView)
-            }
-            */
-            // mixer.mix(frontCameraPixelBuffer: frontCameraPixelBuffer,
-            //          backCameraPixelBuffer: backCameraPixelBuffer,
-            //          in: self.mtkView)
             DispatchQueue.main.async {
                 self.frontCameraPixelBuffer = frontCameraPixelBuffer
                 self.backCameraPixelBuffer = backCameraPixelBuffer
@@ -60,6 +50,7 @@ struct MultiCamView: UIViewControllerRepresentable {
             sender.isEnabled = false
             print("Button1: button was tapped!")
             mixer.needsNewLutTexture = true
+            mixer.filterParameters.sourceMode = 0
             mixer.filterParameters.spaceTimeMode = 0
             sender.isEnabled = true
         }
@@ -69,6 +60,7 @@ struct MultiCamView: UIViewControllerRepresentable {
             sender.isEnabled = false
             print("Button1: button was tapped!")
             mixer.needsNewLutTexture = true
+            mixer.filterParameters.sourceMode = 1
             mixer.filterParameters.spaceTimeMode = 1
             sender.isEnabled = true
         }
@@ -78,7 +70,8 @@ struct MultiCamView: UIViewControllerRepresentable {
             sender.isEnabled = false
             print("Button1: button was tapped!")
             mixer.needsNewLutTexture = true
-            mixer.filterParameters.spaceTimeMode = 2
+            mixer.filterParameters.sourceMode = 0
+            mixer.filterParameters.spaceTimeMode = 1
             sender.isEnabled = true
         }
     }

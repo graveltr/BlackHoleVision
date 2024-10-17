@@ -59,9 +59,6 @@ class BhiMixer {
     var debugMatrixWidth: Int = 0
     var debugMatrixHeight: Int = 0
 
-    // private let accessQueue = DispatchQueue(label: "com.myapp.lutTextureAccessQueue")
-    private var semaphore = DispatchSemaphore(value: 1)
-
     init(device: MTLDevice) {
         self.device = device
         self.commandQueue = device.makeCommandQueue()

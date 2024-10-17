@@ -189,6 +189,7 @@ SchwarzschildLenseResult schwarzschildLense(float M, float ro, float rs, float b
     
     // Normalize the angle to lie between 0 and 2 pi
     float normalizedAngle = normalizeAngle(phiS);
+    result.phif = normalizedAngle;
     
     // Obtain the angle ABC, along with the direction of the angle
     // away from the line of sight.

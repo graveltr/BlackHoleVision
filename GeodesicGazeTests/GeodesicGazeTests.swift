@@ -108,6 +108,7 @@ struct AnyBufferData: BufferData {
     }
 }
 
+// TODO: Schwarzschild explicit testing may be broken since I changed the definition of the result struct
 final class GeodesicGazeTests: XCTestCase {
 
     var device: MTLDevice!

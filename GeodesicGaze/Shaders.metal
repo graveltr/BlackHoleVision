@@ -83,7 +83,7 @@ float2 pixelToScreen(float2 pixelCoords) {
     // return 0.2 * pixelCoords;
 }
 
-LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord, int sourceMode) {
+LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord, int sourceMode, float M) {
     LenseTextureCoordinateResult result;
     
     /*
@@ -96,7 +96,6 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
     // We let rs and ro be large in this set up.
     // This will allow for the usage of an approximation to the
     // elliptic integrals during lensing.
-    float M = 1.0;
     float rs = 1000.0;
     float ro = rs;
     
@@ -111,12 +110,17 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
     
     // Convert the pixel coordinates to coordinates in the image plane
     float lengthPerPixel = 0.2;
-    float2 imagePlaneCoords = lengthPerPixel * relativePixelCoords;
-    // float2 imagePlaneCoords = pixelToScreen(relativePixelCoords);
+    float2 imagePlaneCoords;
+    if (sourceMode == FULL_FOV_MODE) {
+        imagePlaneCoords = pixelToScreen(relativePixelCoords);
+    } else {
+        imagePlaneCoords = lengthPerPixel * relativePixelCoords;
+    }
 
     // Obtain the polar coordinates of this image plane location
     float b = length(imagePlaneCoords);
-    float psi = atan2(imagePlaneCoords.y, imagePlaneCoords.x);
+    // Notice the swapping ... the first texture coordinate is vertical
+    float psi = atan2(imagePlaneCoords.x, imagePlaneCoords.y);
 
     SchwarzschildLenseResult lenseResult = schwarzschildLense(M, ro, rs, b);
     if (lenseResult.status == FAILURE) {
@@ -130,8 +134,47 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
     bool ccw = lenseResult.ccw;
     
     if (sourceMode == FULL_FOV_MODE) {
+        float3 vsSpherical = float3(rs, M_PI_F / 2.0, lenseResult.phif);
+        float3 vsCartesian = sphericalToCartesian(vsSpherical);
         
+        float3 r1 = float3(1.0, 0.0,        0.0);
+        float3 r2 = float3(0.0, cos(psi),   -1.0 * sin(psi));
+        float3 r3 = float3(0.0, sin(psi),   cos(psi));
+
+        // Matrix multiplication by the matrix with rows r1-3
+        float3 vsHatCartesian = float3(dot(r1, vsCartesian),
+                                       dot(r2, vsCartesian),
+                                       dot(r3, vsCartesian));
         
+        // The spherical coordinates of ray's intersection with the source sphere
+        // in the fixed, reference frame.
+        float3 vsHatSpherical = cartesianToSpherical(vsHatCartesian);
+        
+        float phifNormalized = normalizeAngle(vsHatSpherical.z);
+        float thetaf = vsHatSpherical.y;
+        
+        float oneTwoBdd = M_PI_F / 2.0;
+        float threeFourBdd = 3.0 * M_PI_F / 2.0;
+        
+        float v = thetaf / M_PI_F;
+        float u = 0.0;
+        
+        // If in quadrant I
+        if (0.0 <= phifNormalized && phifNormalized <= oneTwoBdd) {
+            u = 0.5 + 0.5 * (phifNormalized / oneTwoBdd);
+            result.status = SUCCESS_FRONT_TEXTURE;
+        } else if (threeFourBdd <= phifNormalized && phifNormalized <= 2.0 * M_PI_F) { // quadrant IV
+            u = 0.5 * ((phifNormalized - threeFourBdd) / (2.0 * M_PI_F - threeFourBdd));
+            result.status = SUCCESS_FRONT_TEXTURE;
+        } else { // II or III
+            u = (phifNormalized - oneTwoBdd) / (threeFourBdd - oneTwoBdd);
+            result.status = SUCCESS_BACK_TEXTURE;
+        }
+        // NOTICE THAT u and v are swapped! Same reason as before.
+        float2 transformedTexCoord = float2(v, u);
+        
+        result.coord = transformedTexCoord;
+
         return result;
     }
 
@@ -139,7 +182,10 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
     // Note that because ro = rs, we don't need to worry about the front-facing
     // camera.
     float btilde = ro * sin(varphitilde);
-    float2 transformedImagePlaneCoords = (ccw ? -1.0 : 1.0) * float2(btilde * cos(psi), btilde * sin(psi));
+    
+    // Again, the swapping
+    float2 transformedImagePlaneCoords = (ccw ? -1.0 : 1.0) * float2(btilde * sin(psi), btilde * cos(psi));
+    
     float2 transformedRelativePixelCoords = transformedImagePlaneCoords / lengthPerPixel;
     float2 transformedPixelCoords = transformedRelativePixelCoords + center;
     float2 transformedTexCoord = transformedPixelCoords / float2(backTextureWidth, backTextureHeight);
@@ -182,6 +228,7 @@ LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode
     float2 relativePixelCoords = pixelCoords - center;
     
     // Convert the pixel coordinates to coordinates in the image plane (alpha, beta)
+    // TODO: when in ACTUAL_FOV_MODE, probably want to use the raw linear scaling
     float2 imagePlaneCoords = pixelToScreen(relativePixelCoords);
     
     // NOTICE THAT y and x are swapped! The first index into inCoord is
@@ -283,7 +330,7 @@ LenseTextureCoordinateResult flatspaceLenseTextureCoordinate(float2 inCoord, int
     LenseTextureCoordinateResult result;
     
     if (sourceMode == FULL_FOV_MODE) {
-        // TODO: fill this in
+        return schwarzschildLenseTextureCoordinate(inCoord, sourceMode, 0.0);
     } else if (sourceMode == ACTUAL_FOV_MODE) {
         result.status = SUCCESS;
         result.coord = inCoord;
@@ -328,6 +375,7 @@ float2 getPipCoord(float2 pipOrigin, float pipHeight, float pipWidth, float2 coo
  * to the fragment shader on subsequent render passes (per frame updates)
  * and sampled.
  */
+// TODO: fix the debug matrix writes ... seem to be going out of bounds?
 kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
                           constant FilterParameters &uniforms   [[buffer(0)]],
                           device float3* matrix                 [[buffer(1)]],
@@ -340,7 +388,7 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
     if (uniforms.spaceTimeMode == 0) {
         result = flatspaceLenseTextureCoordinate(originalCoord, uniforms.sourceMode);
     } else if (uniforms.spaceTimeMode == 1) {
-        result = schwarzschildLenseTextureCoordinate(originalCoord, uniforms.sourceMode);
+        result = schwarzschildLenseTextureCoordinate(originalCoord, uniforms.sourceMode, 1.0);
     } else if (uniforms.spaceTimeMode == 2) {
         result = kerrLenseTextureCoordinate(originalCoord, uniforms.sourceMode);
     } else {
@@ -357,23 +405,23 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
     if (uniforms.sourceMode == FULL_FOV_MODE) {
         if (result.status == SUCCESS_BACK_TEXTURE) {
             lut.write(float4(result.coord, 0.0, 0.0), gid); // 00
-            matrix[linearIndex] = float3(originalCoord, 0);
+            //matrix[linearIndex] = float3(originalCoord, 0);
         }
         if (result.status == SUCCESS_FRONT_TEXTURE) {
             lut.write(float4(result.coord, 0.0, 1.0), gid); // 01
-            matrix[linearIndex] = float3(originalCoord, 0);
+            //matrix[linearIndex] = float3(originalCoord, 0);
         }
         if (result.status == ERROR) {
             lut.write(float4(0.0, 0.0, 1.0, 0.0), gid); // 10
-            matrix[linearIndex] = float3(originalCoord, -1);
+            //matrix[linearIndex] = float3(originalCoord, -1);
         }
         if (result.status == EMITTED_FROM_BLACK_HOLE) {
             lut.write(float4(0.0, 0.0, 1.0, 1.0), gid); // 11
-            matrix[linearIndex] = float3(originalCoord, -1);
+            //matrix[linearIndex] = float3(originalCoord, -1);
         }
         if (result.status == VORTICAL) {
             lut.write(float4(0.0, 0.0, 0.5, 0.5), gid);
-            matrix[linearIndex] = float3(originalCoord, -1);
+            //matrix[linearIndex] = float3(originalCoord, -1);
         }
     }
     
