@@ -1,7 +1,7 @@
 import SwiftUI
+import UIKit
 import AVFoundation
 import MetalKit
-import WebKit
 
 let flatSpaceText = """
     Selected spacetime: flat space \n
@@ -70,52 +70,55 @@ struct MultiCamView: UIViewControllerRepresentable {
             print("Coordinator: view was tapped! Counter: \(parent.counter)")
         }
         
-        @objc func handleButton1(_ sender: UIButton) {
-            sender.isEnabled = false
-            print("Button1: button was tapped!")
+        @objc func spacetimeModeChanged(_ sender: UISegmentedControl) {
+            switch sender.selectedSegmentIndex {
+            case 0:
+                handleFlatSpaceSelection()
+            case 1:
+                handleSchwarzschildSelection()
+            case 2:
+                handleKerrSelection()
+            default:
+                break
+            }
+        }
+        
+        @objc func fovModeChanged(_ sender: UISegmentedControl) {
+            switch sender.selectedSegmentIndex {
+            case 0:
+                handleFullFovSelection()
+            case 1:
+                handleRealisticFovSelection()
+            default:
+                break
+            }
+        }
+
+        func handleFlatSpaceSelection() {
+            print("hello from flat space selection")
             mixer.needsNewLutTexture = true
             mixer.filterParameters.spaceTimeMode = 0
-            sender.isEnabled = true
         }
-        
-        @objc func handleButton2(_ sender: UIButton) {
-            print("Button2: button was tapped!")
-            sender.isEnabled = false
+        func handleSchwarzschildSelection() {
+            print("hello from schwarzschild selection")
             mixer.needsNewLutTexture = true
             mixer.filterParameters.spaceTimeMode = 1
-            sender.isEnabled = true
         }
-        
-        @objc func handleButton3(_ sender: UIButton) {
-            print("Button3: button was tapped!")
-            sender.isEnabled = false
+        func handleKerrSelection() { 
+            print("hello from kerr selection")
             mixer.needsNewLutTexture = true
             mixer.filterParameters.spaceTimeMode = 2
-            sender.isEnabled = true
         }
         
-        @objc func handleButton4(_ sender: UIButton) {
-            print("Button3: button was tapped!")
-            sender.isEnabled = false
-            mixer.needsNewLutTexture = true
-            mixer.filterParameters.sourceMode = 1
-            sender.isEnabled = true
-        }
-        
-        @objc func handleButton5(_ sender: UIButton) {
-            print("Button3: button was tapped!")
-            sender.isEnabled = false
+        func handleFullFovSelection() {
+            print("hello from full fov")
             mixer.needsNewLutTexture = true
             mixer.filterParameters.sourceMode = 0
-            sender.isEnabled = true
         }
-        
-        @objc func handleMenuButton(_ sender: UIButton) {
-            print("Button3: button was tapped!")
-            sender.isEnabled = false
-            let currIsHidden = multiCamViewController!.overlayMenuView.isHidden
-            multiCamViewController!.overlayMenuView.isHidden = !currIsHidden
-            sender.isEnabled = true
+        func handleRealisticFovSelection() { 
+            print("hello from realistic fov")
+            mixer.needsNewLutTexture = true
+            mixer.filterParameters.sourceMode = 1
         }
     }
 
@@ -129,6 +132,41 @@ struct MultiCamView: UIViewControllerRepresentable {
         return Coordinator(parent: self, mtkView: mtkView, mixer: mixer, multiCamCapture: multiCamCapture)
     }
 
+    func makeUIViewController(context: Context) -> UIViewController {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let viewController = storyboard.instantiateViewController(withIdentifier: "MultiCamViewController") as! MultiCamViewController
+        
+        let multiCamCapture = context.coordinator.multiCamCapture
+        multiCamCapture.delegate = context.coordinator
+        multiCamCapture.startRunning()
+
+        let mtkView = context.coordinator.mtkView
+        mtkView.frame = CGRect(x: 0,
+                               y: 0,
+                               width:   viewController.view.bounds.width,
+                               height:  viewController.view.bounds.height)
+        viewController.mtkView = mtkView
+        viewController.view.addSubview(mtkView)
+        viewController.view.sendSubviewToBack(mtkView)
+        
+        /*
+        viewController.helloWorldButton.addTarget(context.coordinator,
+                                                  action: #selector(Coordinator.handleHelloWorldButton(_:)),
+                                                  for: .touchUpInside)
+        */
+        
+        viewController.spacetimeSegmentedControl.addTarget(context.coordinator,
+                                                           action: #selector(context.coordinator.spacetimeModeChanged(_:)),
+                                                           for: .valueChanged)
+        viewController.fovSegmentedControl.addTarget(context.coordinator,
+                                                     action: #selector(context.coordinator.fovModeChanged(_:)),
+                                                     for: .valueChanged)
+
+        context.coordinator.multiCamViewController = viewController
+        return viewController
+    }
+    
+    /*
     func makeUIViewController(context: Context) -> UIViewController {
         // let viewController = UIViewController()
         let viewController = MultiCamViewController()
@@ -153,24 +191,6 @@ struct MultiCamView: UIViewControllerRepresentable {
         label.textColor = .white
         label.textAlignment = .left
         overlayMenuView.addSubview(label)
-        
-        /*
-        let webView = WKWebView(frame: CGRect(x: 20, y: 100, width: overlayMenuView.bounds.width - 40, height: 50))
-        let mathJaxScript = """
-            <html>
-            <head>
-                <script type="text/javascript" async
-                    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
-                </script>
-            </head>
-            <body>
-                \\int_a^b f(x)
-            </body>
-            </html>
-        """
-        webView.loadHTMLString(mathJaxScript, baseURL: nil)
-        overlayMenuView.addSubview(webView)
-        */
         
 
         let multiCamCapture = context.coordinator.multiCamCapture
@@ -248,10 +268,9 @@ struct MultiCamView: UIViewControllerRepresentable {
         context.coordinator.multiCamViewController = viewController
         return viewController
     }
+    */
 
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        // Update the UI view controller if needed
-    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) { }
     
     private func createButton(withTitle title: String, target: Any?, action: Selector) -> UIButton {
         let button = UIButton(type: .system)
@@ -267,6 +286,11 @@ struct MultiCamView: UIViewControllerRepresentable {
 
 class MultiCamViewController: UIViewController {
     var mtkView: MTKView!
-    var overlayMenuView: UIView!
-    var overlayMenuViewLabel: UILabel!
+    
+    @IBOutlet weak var spacetimeSegmentedControl: UISegmentedControl!
+    @IBOutlet weak var fovSegmentedControl: UISegmentedControl!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+    }
 }
