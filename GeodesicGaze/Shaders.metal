@@ -328,17 +328,7 @@ LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode
 
 LenseTextureCoordinateResult flatspaceLenseTextureCoordinate(float2 inCoord, int sourceMode) {
     LenseTextureCoordinateResult result;
-    
-    if (sourceMode == FULL_FOV_MODE) {
-        return schwarzschildLenseTextureCoordinate(inCoord, sourceMode, 0.0);
-    } else if (sourceMode == ACTUAL_FOV_MODE) {
-        result.status = SUCCESS;
-        result.coord = inCoord;
-    } else {
-        assert(false);
-    }
-    
-    return result;
+    return schwarzschildLenseTextureCoordinate(inCoord, sourceMode, 0.0);
 }
 
 vertex VertexOut vertexShader(uint vertexID [[vertex_id]]) {
