@@ -202,7 +202,7 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
     return result;
 }
 
-LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode) {
+LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode, float a) {
     LenseTextureCoordinateResult result;
     
     float backTextureWidth = 1920.0;
@@ -213,7 +213,6 @@ LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode
      * ray trace from this location back into the geometry.
      */
     float M = 1.0;
-    float a = 0.9;
     float thetas = M_PI_F / 2.0;
     float rs = 1000.0;
     float ro = rs;
@@ -327,7 +326,6 @@ LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode
 }
 
 LenseTextureCoordinateResult flatspaceLenseTextureCoordinate(float2 inCoord, int sourceMode) {
-    LenseTextureCoordinateResult result;
     return schwarzschildLenseTextureCoordinate(inCoord, sourceMode, 0.0);
 }
 
@@ -380,7 +378,7 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
     } else if (uniforms.spaceTimeMode == 1) {
         result = schwarzschildLenseTextureCoordinate(originalCoord, uniforms.sourceMode, 1.0);
     } else if (uniforms.spaceTimeMode == 2) {
-        result = kerrLenseTextureCoordinate(originalCoord, uniforms.sourceMode);
+        result = kerrLenseTextureCoordinate(originalCoord, uniforms.sourceMode, uniforms.a);
     } else {
         assert(false);
     }
@@ -439,7 +437,7 @@ kernel void precomputeLutTest(texture2d<float, access::write> lut   [[texture(0)
     // This is normalizing to texture coordinate between 0 and 1
     float2 originalCoord = float2(gid) / float2(lut.get_width(), lut.get_height());
     
-    LenseTextureCoordinateResult result = kerrLenseTextureCoordinate(originalCoord, 0);
+    LenseTextureCoordinateResult result = kerrLenseTextureCoordinate(originalCoord, 0, 0.5);
     lut.write(float4(result.coord, 0.0, 0.0), gid);
     //lut.write(float4(0.0, 0.0, 0.0, 0.0), gid);
 }
