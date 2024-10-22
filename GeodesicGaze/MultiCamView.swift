@@ -58,17 +58,13 @@ struct MultiCamView: UIViewControllerRepresentable {
 
         @objc func spinStepperValueChanged(_ sender: UIStepper) { 
             multiCamViewController!.spinReadoutLabel.text = String(getCurrSpinValue())
-            mixer.needsNewLutTexture = true
             mixer.filterParameters.a = getCurrSpinValue()
+            mixer.needsNewLutTexture = true
         }
         @objc func distanceStepperValueChanged(_ sender: UIStepper) {
-            let idx = Int(sender.value)
-            let selectedValue = distanceValues[idx]
-            
-            print("idx: \(idx), value: \(selectedValue)")
-
+            multiCamViewController!.distanceReadoutLabel.text = String(getCurrDistanceValue())
+            mixer.filterParameters.d = getCurrDistanceValue()
             mixer.needsNewLutTexture = true
-            mixer.filterParameters.d = selectedValue
         }
 
         @objc func spacetimeModeChanged(_ sender: UISegmentedControl) {
@@ -97,7 +93,8 @@ struct MultiCamView: UIViewControllerRepresentable {
 
         func handleFlatSpaceSelection() {
             multiCamViewController?.spinReadoutLabel.isHidden = true
-            
+            multiCamViewController?.distanceReadoutLabel.isHidden = true
+
             multiCamViewController?.spinStepper.isHidden = true
             multiCamViewController?.spinStepperLabel.isHidden = true
             
@@ -113,16 +110,25 @@ struct MultiCamView: UIViewControllerRepresentable {
             multiCamViewController?.spinStepper.isHidden = true
             multiCamViewController?.spinStepperLabel.isHidden = true
             
+            multiCamViewController?.distanceReadoutLabel.text = String(getCurrDistanceValue())
+            multiCamViewController?.distanceReadoutLabel.isHidden = false
+            
             multiCamViewController?.distanceStepper.isHidden = false
             multiCamViewController?.distanceStepperLabel.isHidden = false
             
             mixer.filterParameters.spaceTimeMode = 1
-            
+            mixer.filterParameters.d = getCurrDistanceValue()
+
             mixer.needsNewLutTexture = true
         }
         func handleKerrSelection() { 
             multiCamViewController?.spinReadoutLabel.text = String(getCurrSpinValue())
             multiCamViewController?.spinReadoutLabel.isHidden = false
+            
+            multiCamViewController?.distanceReadoutLabel.text = String(getCurrDistanceValue())
+            multiCamViewController?.distanceReadoutLabel.isHidden = false
+            
+            multiCamViewController?.distanceReadoutLabel.isHidden = false
 
             multiCamViewController?.spinStepper.isHidden = false
             multiCamViewController?.spinStepperLabel.isHidden = false
@@ -132,6 +138,7 @@ struct MultiCamView: UIViewControllerRepresentable {
             
             mixer.filterParameters.spaceTimeMode = 2
             mixer.filterParameters.a = getCurrSpinValue()
+            mixer.filterParameters.d = getCurrDistanceValue()
             
             mixer.needsNewLutTexture = true
         }
@@ -150,6 +157,10 @@ struct MultiCamView: UIViewControllerRepresentable {
         func getCurrSpinValue() -> Float {
             let currSpinIdx = Int(multiCamViewController!.spinStepper.value)
             return spinValues[currSpinIdx]
+        }
+        func getCurrDistanceValue() -> Float {
+            let currDistanceIdx = Int(multiCamViewController!.distanceStepper.value)
+            return distanceValues[currDistanceIdx]
         }
     }
 
@@ -180,6 +191,9 @@ struct MultiCamView: UIViewControllerRepresentable {
         viewController.view.addSubview(mtkView)
         viewController.view.sendSubviewToBack(mtkView)
         
+        viewController.spinReadoutLabel.isHidden = true
+        viewController.distanceReadoutLabel.isHidden = true
+
         viewController.aboutButton.addTarget(context.coordinator,
                                              action: #selector(context.coordinator.handleAboutButton(_:)),
                                              for: .touchUpInside)
@@ -192,8 +206,6 @@ struct MultiCamView: UIViewControllerRepresentable {
                                              for: .valueChanged)
         viewController.spinStepper.isHidden = true
         viewController.spinStepperLabel.isHidden = true
-        
-        viewController.spinReadoutLabel.isHidden = true
         
         viewController.distanceStepper.addTarget(context.coordinator,
                                                  action: #selector(context.coordinator.distanceStepperValueChanged(_:)),
@@ -219,7 +231,8 @@ class MultiCamViewController: UIViewController {
     var mtkView: MTKView!
     
     @IBOutlet weak var spinReadoutLabel: UILabel!
-    
+    @IBOutlet weak var distanceReadoutLabel: UILabel!
+
     @IBOutlet weak var controlsSubView: UIView!
     
     @IBOutlet weak var aboutButton: UIButton!

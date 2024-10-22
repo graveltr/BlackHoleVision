@@ -47,7 +47,7 @@ class BhiMixer {
     
     var lutTexture: MTLTexture!
     
-    var filterParameters = FilterParameters(spaceTimeMode: 0, sourceMode: 1, d: 0, a: 0.001, thetas: 0)
+    var filterParameters = FilterParameters(spaceTimeMode: 0, sourceMode: 1, d: 0, a: 0, thetas: 0)
     var needsNewLutTexture = true
     
     var filterParametersBuffer: MTLBuffer
