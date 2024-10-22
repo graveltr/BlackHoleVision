@@ -54,6 +54,11 @@ struct FilterParameters {
     float thetas;
 };
 
+float flipTextureCoord(float coord) {
+    float Deltax = 0.5 - coord;
+    return 0.5 + Deltax;
+}
+
 float3 sampleYUVTexture(texture2d<float, access::sample> YTexture,
                         texture2d<float, access::sample> UVTexture,
                         float2 texCoord) {
@@ -137,6 +142,8 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
         float3 vsSpherical = float3(rs, M_PI_F / 2.0, lenseResult.phif);
         float3 vsCartesian = sphericalToCartesian(vsSpherical);
         
+        // Rotation by psi about the x-axis
+        // Aligns the plane of motion with the equatorial plane
         float3 r1 = float3(1.0, 0.0,        0.0);
         float3 r2 = float3(0.0, cos(psi),   -1.0 * sin(psi));
         float3 r3 = float3(0.0, sin(psi),   cos(psi));
@@ -171,7 +178,8 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
             result.status = SUCCESS_BACK_TEXTURE;
         }
         // NOTICE THAT u and v are swapped! Same reason as before.
-        float2 transformedTexCoord = float2(v, u);
+        // TODO: understand why the flips are needed ... probably take LOS -> -LOS
+        float2 transformedTexCoord = float2(flipTextureCoord(v), flipTextureCoord(u));
         
         result.coord = transformedTexCoord;
 
@@ -202,7 +210,7 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
     return result;
 }
 
-LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode, float d, float a) {
+LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int sourceMode, float d, float a) {
     LenseTextureCoordinateResult result;
     
     float backTextureWidth = 1920.0;
@@ -227,9 +235,14 @@ LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode
     float2 relativePixelCoords = pixelCoords - center;
     
     // Convert the pixel coordinates to coordinates in the image plane (alpha, beta)
-    // TODO: when in ACTUAL_FOV_MODE, probably want to use the raw linear scaling
-    float2 imagePlaneCoords = pixelToScreen(relativePixelCoords);
-    
+    float lengthPerPixel = 0.2;
+    float2 imagePlaneCoords;
+    if (sourceMode == FULL_FOV_MODE) {
+        imagePlaneCoords = pixelToScreen(relativePixelCoords);
+    } else {
+        imagePlaneCoords = lengthPerPixel * relativePixelCoords;
+    }
+
     // NOTICE THAT y and x are swapped! The first index into inCoord is
     // the up and down direction.
     float alpha = imagePlaneCoords.y;
@@ -255,7 +268,7 @@ LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode
     float phif = kerrLenseResult.phif;
     float thetaf = acos(kerrLenseResult.costhetaf);
     
-    if (mode == FULL_FOV_MODE) {
+    if (sourceMode == FULL_FOV_MODE) {
         float3 rotatedSphericalCoordinates = rotateSphericalCoordinate(float3(rs, thetas, 0.0),
                                                                        float3(ro, thetaf, phif));
         
@@ -305,11 +318,9 @@ LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode
     }
     float betaflat = pthetaSign * sqrt(termUnderRadical);
     
-    float lengthPerPixelInverse = 0.5;
-    
     // Unwind through the texture -> screen coordinate mappings
     float2 transformedImagePlaneCoords = float2(betaflat, alphaflat);
-    float2 transformedRelativePixelCoords = transformedImagePlaneCoords / lengthPerPixelInverse;
+    float2 transformedRelativePixelCoords = transformedImagePlaneCoords / lengthPerPixel;
     float2 transformedPixelCoords = transformedRelativePixelCoords + center;
     float2 transformedTexCoord = transformedPixelCoords / float2(backTextureWidth, backTextureHeight);
     
@@ -325,8 +336,8 @@ LenseTextureCoordinateResult kerrLenseTextureCoordinate(float2 inCoord, int mode
     return result;
 }
 
-LenseTextureCoordinateResult flatspaceLenseTextureCoordinate(float2 inCoord, int sourceMode, float d) {
-    return schwarzschildLenseTextureCoordinate(inCoord, sourceMode, 0.0, d);
+LenseTextureCoordinateResult flatspaceLenseTextureCoordinate(float2 inCoord, int sourceMode) {
+    return schwarzschildLenseTextureCoordinate(inCoord, sourceMode, 0.0, 1000.0);
 }
 
 vertex VertexOut vertexShader(uint vertexID [[vertex_id]]) {
@@ -374,7 +385,7 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
     
     LenseTextureCoordinateResult result;
     if (uniforms.spaceTimeMode == 0) {
-        result = flatspaceLenseTextureCoordinate(originalCoord, uniforms.sourceMode, uniforms.d);
+        result = flatspaceLenseTextureCoordinate(originalCoord, uniforms.sourceMode);
     } else if (uniforms.spaceTimeMode == 1) {
         result = schwarzschildLenseTextureCoordinate(originalCoord, uniforms.sourceMode, 1.0, uniforms.d);
     } else if (uniforms.spaceTimeMode == 2) {
@@ -432,6 +443,25 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
     }
 }
 
+kernel void postProcess(texture2d<float, access::read_write> lut    [[texture(0)]],
+                        constant uint &sliceWidth                   [[buffer(0)]],
+                        constant uint &textureWidth                 [[buffer(1)]],
+                        uint2 gid [[thread_position_in_grid]]) {
+    if (gid.y >= textureWidth / 2 - sliceWidth / 2 && gid.y < textureWidth / 2 + sliceWidth / 2) {
+        float4 leftPixel    = lut.read(uint2(gid.x, gid.y - sliceWidth / 2));
+        float4 rightPixel   = lut.read(uint2(gid.x, gid.y + sliceWidth / 2));
+        
+        float factor = float(gid.y - (textureWidth / 2 - sliceWidth / 2)) / sliceWidth;
+        float2 interpolatedTexCoords = mix(leftPixel.xy, rightPixel.xy, factor);
+        
+        // We interpolate the texture coordinates, but just copy down the
+        // status code
+        float4 finalPixel = float4(interpolatedTexCoords, leftPixel.zw);
+        
+        lut.write(finalPixel, gid);
+    }
+}
+
 kernel void precomputeLutTest(texture2d<float, access::write> lut   [[texture(0)]],
                               uint2 gid [[thread_position_in_grid]]) {
     // This is normalizing to texture coordinate between 0 and 1
@@ -481,6 +511,10 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
     float2 transformedTexCoord = lutSample.xy;
     float2 statusCode = lutSample.zw;
     
+    if (fEqual(statusCode[0], 10.0) && fEqual(statusCode[1], 10.0)) {
+        return float4(1,0,0,1);
+    }
+    
     if (uniforms.mode == FULL_FOV_MODE) {
         if (fEqual(statusCode[0], 0.0) && fEqual(statusCode[1], 0.0)) {
             float3 rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
@@ -516,5 +550,5 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         }
     }
     
-    return float4(1.0, 1.0, 1.0, 1.0);
+    return float4(1.0, 0.0, 1.0, 1.0);
 }

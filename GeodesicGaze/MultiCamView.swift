@@ -201,6 +201,8 @@ struct MultiCamView: UIViewControllerRepresentable {
                                                 action: #selector(context.coordinator.handleControlsButton(_:)),
                                              for: .touchUpInside)
 
+        
+        viewController.spinStepper.tintColor = UIColor.red
         viewController.spinStepper.addTarget(context.coordinator,
                                              action: #selector(context.coordinator.spinStepperValueChanged(_:)),
                                              for: .valueChanged)
@@ -212,6 +214,7 @@ struct MultiCamView: UIViewControllerRepresentable {
                                                  for: .valueChanged)
         viewController.distanceStepper.isHidden = true
         viewController.distanceStepperLabel.isHidden = true
+        
 
         viewController.spacetimeSegmentedControl.addTarget(context.coordinator,
                                                            action: #selector(context.coordinator.spacetimeModeChanged(_:)),
@@ -220,7 +223,11 @@ struct MultiCamView: UIViewControllerRepresentable {
                                                      action: #selector(context.coordinator.fovModeChanged(_:)),
                                                      for: .valueChanged)
 
+        viewController.aboutButton.isHidden = true
+        
         context.coordinator.multiCamViewController = viewController
+        context.coordinator.mixer.filterParameters.a = context.coordinator.getCurrSpinValue()
+        context.coordinator.mixer.filterParameters.d = context.coordinator.getCurrDistanceValue()
         return viewController
     }
     

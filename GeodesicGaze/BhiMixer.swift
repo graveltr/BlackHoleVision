@@ -35,6 +35,7 @@ class BhiMixer {
     var textureCache: CVMetalTextureCache!
     var pipelineState: MTLRenderPipelineState!
     var computePipelineState: MTLComputePipelineState!
+    var postProcessingPipelineState: MTLComputePipelineState!
     var frontYTexture: MTLTexture?
     var frontUVTexture: MTLTexture?
     var frontTextureHeight: Int?
@@ -93,6 +94,9 @@ class BhiMixer {
         
         let computeFunction = library?.makeFunction(name: "precomputeLut")
         computePipelineState = try! device.makeComputePipelineState(function: computeFunction!)
+        
+        let postProcessingFunction = library?.makeFunction(name: "postProcess")
+        postProcessingPipelineState = try! device.makeComputePipelineState(function: postProcessingFunction!)
     }
     
     func initializeSizeDependentData(width: Int, height: Int) {
@@ -156,6 +160,20 @@ class BhiMixer {
             computeEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
             computeEncoder.endEncoding()
             
+            if filterParameters.spaceTimeMode == 2 {
+                let postProcessingEncoder = computeCommandBuffer.makeComputeCommandEncoder()!
+                postProcessingEncoder.setComputePipelineState(postProcessingPipelineState)
+                
+                var sliceWidth = 50
+                var textureWidth = lutTexture.height // Account for weird convention
+                
+                postProcessingEncoder.setTexture(lutTexture,                                    index: 0)
+                postProcessingEncoder.setBytes(&sliceWidth, length: MemoryLayout<uint>.size,    index: 0)
+                postProcessingEncoder.setBytes(&textureWidth, length: MemoryLayout<uint>.size,  index: 1)
+                postProcessingEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
+                postProcessingEncoder.endEncoding()
+            }
+
             computeCommandBuffer.commit()
             computeCommandBuffer.waitUntilCompleted()
             
