@@ -101,6 +101,8 @@ struct MultiCamView: UIViewControllerRepresentable {
             multiCamViewController?.distanceStepper.isHidden = true
             multiCamViewController?.distanceStepperLabel.isHidden = true
             
+            multiCamViewController?.fovSegmentedControl.isEnabled = true
+
             mixer.filterParameters.spaceTimeMode = 0
             mixer.needsNewLutTexture = true
         }
@@ -118,6 +120,8 @@ struct MultiCamView: UIViewControllerRepresentable {
             
             mixer.filterParameters.spaceTimeMode = 1
             mixer.filterParameters.d = getCurrDistanceValue()
+            
+            multiCamViewController?.fovSegmentedControl.isEnabled = true
 
             mixer.needsNewLutTexture = true
         }
@@ -138,6 +142,10 @@ struct MultiCamView: UIViewControllerRepresentable {
             mixer.filterParameters.a = getCurrSpinValue()
             mixer.filterParameters.d = getCurrDistanceValue()
             
+            multiCamViewController?.fovSegmentedControl.selectedSegmentIndex = 1
+            multiCamViewController?.fovSegmentedControl.isEnabled = false
+            mixer.filterParameters.sourceMode = 0
+
             mixer.needsNewLutTexture = true
         }
         

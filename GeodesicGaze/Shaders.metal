@@ -525,11 +525,11 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
             float3 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, transformedTexCoord);
             return float4(rgb, 1.0);
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 0.0)) {
-            return float4(0.0, 1.0, 0.0, 1.0);
+            return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 1.0)) {
             return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 0.5) && fEqual(statusCode[1], 0.5)) {
-            return float4(1.0, 1.0, 0.0, 1.0);
+            return float4(0.0, 0.0, 0.0, 1.0);
         } else {
             return float4(0.0, 0.0, 1.0, 1.0);
         }
@@ -542,7 +542,7 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         } else if (fEqual(statusCode[0], 0.0) && fEqual(statusCode[1], 1.0)) {
             return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 0.0)) {
-            return float4(0.0, 1.0, 0.0, 1.0);
+            return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 1.0)) {
             return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 0.5) && fEqual(statusCode[1], 0.5)) {
