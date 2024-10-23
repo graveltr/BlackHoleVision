@@ -160,7 +160,8 @@ class BhiMixer {
             computeEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
             computeEncoder.endEncoding()
             
-            if filterParameters.spaceTimeMode == 2 {
+            /*
+            if filterParameters.spaceTimeMode == 2 && filterParameters.sourceMode == 0 {
                 let postProcessingEncoder = computeCommandBuffer.makeComputeCommandEncoder()!
                 postProcessingEncoder.setComputePipelineState(postProcessingPipelineState)
                 
@@ -173,9 +174,14 @@ class BhiMixer {
                 postProcessingEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
                 postProcessingEncoder.endEncoding()
             }
+            */
 
             computeCommandBuffer.commit()
             computeCommandBuffer.waitUntilCompleted()
+            
+            if filterParameters.spaceTimeMode == 2 && filterParameters.sourceMode == 0 {
+                cpuPostProcess(rowInterp: fEqual(0.01, filterParameters.a))
+            }
             
             needsNewLutTexture = false
         }
@@ -295,5 +301,152 @@ class BhiMixer {
         }
 
         _ = matrixResult[0][0]
+    }
+    
+    private func cpuPostProcess(rowInterp: Bool) {
+        let textureWidth = lutTexture.width
+        let textureHeight = lutTexture.height
+        let pixelFormat = lutTexture.pixelFormat
+        
+        let bytesPerPixel = 16
+        let bytesPerRow = textureWidth * bytesPerPixel
+        
+        var data = [Float](repeating: 0, count: textureHeight * textureWidth * 4)
+        
+        lutTexture.getBytes(&data, 
+                            bytesPerRow: bytesPerRow,
+                            from: MTLRegionMake2D(0, 0, textureWidth, textureHeight), 
+                            mipmapLevel: 0)
+        
+        let shadowWidth = 120
+        let startCol = textureWidth / 2 - shadowWidth / 2
+        let endCol = textureWidth / 2 + shadowWidth / 2
+        
+        let seekWidth = 30
+        let startRow = textureHeight / 2 - seekWidth / 2
+        let endRow = textureHeight / 2 + seekWidth / 2
+        
+        let combinedRange = Array(0..<startCol) + Array(endCol..<textureWidth)
+
+        for col in combinedRange {
+            var errorCount = 0
+            var rowIdxOfFirstError = -1
+            var rowIdxOfLastError = -1
+            for row in startRow..<endRow {
+                let index = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                // If error status code
+                if fEqual(data[index + 2], 1.0) && fEqual(data[index + 3], 0.0) {
+                    if rowIdxOfFirstError == -1 {
+                        rowIdxOfFirstError = row
+                    }
+                    rowIdxOfLastError = row
+                    errorCount += 1
+                }
+            }
+            
+            if errorCount == 0 { continue }
+            print("col: \(col) error count: \(errorCount)")
+            
+            // Increasing row -> "lower"
+            let rowIdxOfUpperPixel = (rowIdxOfFirstError - 1)
+            let rowIdxOfLowerPixel = (rowIdxOfLastError + 1)
+            let arrIdxOfUpperPixel = rowColToArrIdx(row: rowIdxOfUpperPixel, col: col, width: textureWidth)
+            let arrIdxOfLowerPixel = rowColToArrIdx(row: rowIdxOfLowerPixel, col: col, width: textureWidth)
+
+            let widthInRows = rowIdxOfLowerPixel - rowIdxOfUpperPixel + 1
+            
+            let upperPixelx = data[arrIdxOfUpperPixel]
+            let upperPixely = data[arrIdxOfUpperPixel + 1]
+            let lowerPixelx = data[arrIdxOfLowerPixel]
+            let lowerPixely = data[arrIdxOfLowerPixel + 1]
+            
+            for row in rowIdxOfFirstError...rowIdxOfLastError {
+                let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                
+                let factor: Float = Float(row - rowIdxOfUpperPixel) / Float(widthInRows)
+                
+                let interpx = mix(upperPixelx, lowerPixelx, factor)
+                let interpy = mix(upperPixely, lowerPixely, factor)
+                
+                data[arrIndex]      = interpx
+                data[arrIndex + 1]  = interpy
+                data[arrIndex + 2]  = 0.0
+                data[arrIndex + 3]  = 0.0
+            }
+        }
+        
+        if rowInterp {
+            let shadowHeight = 450
+            let startRow = textureHeight / 2 - shadowHeight / 2
+            let endRow = textureHeight / 2 + shadowHeight / 2
+            
+            let seekWidth = 10
+            let startCol = textureWidth / 2 - seekWidth / 2
+            let endCol = textureWidth / 2 + seekWidth / 2
+            
+            let combinedRange = Array(0..<startRow) + Array(endRow..<textureHeight)
+            
+            for row in combinedRange {
+                var errorCount = 0
+                var colIdxOfFirstError = -1
+                var colIdxOfLastError = -1
+                for col in startCol..<endCol {
+                    let index = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                    if fEqual(data[index + 2], 1.0) && fEqual(data[index + 3], 0.0) {
+                        if colIdxOfFirstError == -1 {
+                            colIdxOfFirstError = col
+                        }
+                        colIdxOfLastError = col
+                        errorCount += 1
+                    }
+                }
+                
+                if errorCount == 0 { continue }
+                print("row: \(row) error count: \(errorCount)")
+                
+                let colIdxOfLeftPixel = (colIdxOfFirstError - 1)
+                let colIdxOfRightPixel = (colIdxOfLastError + 1)
+                let arrIdxOfLeftPixel = rowColToArrIdx(row: row, col: colIdxOfLeftPixel, width: textureWidth)
+                let arrIdxOfRightPixel = rowColToArrIdx(row: row, col: colIdxOfRightPixel, width: textureWidth)
+                
+                let widthInCols = colIdxOfRightPixel - colIdxOfLeftPixel + 1
+                
+                let leftPixelx = data[arrIdxOfLeftPixel]
+                let leftPixely = data[arrIdxOfLeftPixel + 1]
+                let rightPixelx = data[arrIdxOfRightPixel]
+                let rightPixely = data[arrIdxOfRightPixel + 1]
+                
+                for col in colIdxOfFirstError...colIdxOfLastError {
+                    let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                    
+                    let factor: Float = Float(col - colIdxOfLeftPixel) / Float(widthInCols)
+                    
+                    let interpx = mix(leftPixelx, rightPixelx, factor)
+                    let interpy = mix(leftPixely, rightPixely, factor)
+                    
+                    data[arrIndex]      = interpx
+                    data[arrIndex + 1]  = interpy
+                    data[arrIndex + 2]  = 0.0
+                    data[arrIndex + 3]  = 0.0
+                }
+            }
+        }
+        
+        lutTexture.replace(region: MTLRegionMake2D(0, 0, textureWidth, textureHeight),
+                           mipmapLevel: 0,
+                           withBytes: data,
+                           bytesPerRow: bytesPerRow)
+    }
+    
+    private func fEqual(_ a: Float, _ b: Float, epsilon: Float = 1e-6) -> Bool {
+        return abs(a - b) < epsilon
+    }
+    
+    private func mix(_ x: Float, _ y: Float, _ a: Float) -> Float {
+        return x * (1.0 - a) + y * a;
+    }
+    
+    private func rowColToArrIdx(row: Int, col: Int, width: Int) -> Int {
+        return row * width * 4 + col * 4
     }
 }

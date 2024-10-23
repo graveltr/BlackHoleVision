@@ -481,9 +481,11 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
                                           constant Uniforms &uniforms [[buffer(0)]]) {
     constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::linear);
     
+    /*
     if (0.28 < in.texCoord.x && in.texCoord.x < 0.29 && 0.50 < in.texCoord.y && in.texCoord.y < 0.52) {
         return float4(1,0,0,1);
     }
+    */
     
     float2 backPipOrigin = float2(0.05, 0.7);
     float2 frontPipOrigin = float2(0.05, 0.05);
