@@ -180,7 +180,8 @@ class BhiMixer {
             computeCommandBuffer.waitUntilCompleted()
             
             if filterParameters.spaceTimeMode == 2 && filterParameters.sourceMode == 0 {
-                cpuPostProcess(rowInterp: fEqual(0.01, filterParameters.a))
+                // cpuPostProcess(rowInterp: fEqual(0.01, filterParameters.a))
+                cpuPostProcessStatic()
             }
             
             needsNewLutTexture = false
@@ -306,7 +307,6 @@ class BhiMixer {
     private func cpuPostProcess(rowInterp: Bool) {
         let textureWidth = lutTexture.width
         let textureHeight = lutTexture.height
-        let pixelFormat = lutTexture.pixelFormat
         
         let bytesPerPixel = 16
         let bytesPerRow = textureWidth * bytesPerPixel
@@ -438,6 +438,62 @@ class BhiMixer {
                            bytesPerRow: bytesPerRow)
     }
     
+    private func cpuPostProcessStatic() {
+        let textureWidth = lutTexture.width
+        let textureHeight = lutTexture.height
+        
+        let bytesPerPixel = 16
+        let bytesPerRow = textureWidth * bytesPerPixel
+        
+        var data = [Float](repeating: 0, count: textureHeight * textureWidth * 4)
+        
+        lutTexture.getBytes(&data,
+                            bytesPerRow: bytesPerRow,
+                            from: MTLRegionMake2D(0, 0, textureWidth, textureHeight),
+                            mipmapLevel: 0)
+        
+        let shadowWidth = 120
+        let startCol = textureWidth / 2 - shadowWidth / 2
+        let endCol = textureWidth / 2 + shadowWidth / 2
+        
+        let seekWidth = 70
+        let startRow = textureHeight / 2 - seekWidth / 2
+        let endRow = textureHeight / 2 + seekWidth / 2
+        
+        let combinedRange = Array(0..<startCol) + Array(endCol..<textureWidth)
+
+        for col in combinedRange {
+            
+            let arrIdxOfStartPixel = rowColToArrIdx(row: startRow, col: col, width: textureWidth)
+            let arrIdxOfEndPixel = rowColToArrIdx(row: endRow, col: col, width: textureWidth)
+            
+            let startPixelx = data[arrIdxOfStartPixel]
+            let startPixely = data[arrIdxOfStartPixel + 1]
+            
+            let endPixelx = data[arrIdxOfEndPixel]
+            let endPixely = data[arrIdxOfEndPixel + 1]
+
+            for row in startRow...endRow {
+                let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                
+                let factor: Float = Float(row - startRow) / Float(endRow - startRow + 1)
+                
+                let interpx = mix(startPixelx, endPixelx, factor)
+                let interpy = mix(startPixely, endPixely, factor)
+                
+                data[arrIndex]      = interpx
+                data[arrIndex + 1]  = interpy
+                data[arrIndex + 2]  = 0.0
+                data[arrIndex + 3]  = 0.0
+            }
+        }
+        
+        lutTexture.replace(region: MTLRegionMake2D(0, 0, textureWidth, textureHeight),
+                           mipmapLevel: 0,
+                           withBytes: data,
+                           bytesPerRow: bytesPerRow)
+    }
+
     private func fEqual(_ a: Float, _ b: Float, epsilon: Float = 1e-6) -> Bool {
         return abs(a - b) < epsilon
     }

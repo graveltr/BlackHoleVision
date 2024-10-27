@@ -41,7 +41,6 @@
                                         <segments>
                                             <segment title="Flat"/>
                                             <segment title="Schwarzschild"/>
-                                            <segment title="Kerr"/>
                                         </segments>
                                     </segmentedControl>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Spin:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G7z-Zo-1v8">

@@ -487,13 +487,16 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
     }
     */
     
-    float2 backPipOrigin = float2(0.05, 0.7);
-    float2 frontPipOrigin = float2(0.05, 0.05);
     
-    float aRatio = 1.00;
+    float aRatio = 0.9;
     float pipHeight = 0.22;
     float pipWidth = pipHeight * aRatio;
     
+    float edgeSpacing = 0.05;
+    
+    float2 backPipOrigin = float2(edgeSpacing, 1.0 - pipHeight - edgeSpacing);
+    float2 frontPipOrigin = float2(edgeSpacing, edgeSpacing);
+
     float2 backPipCoord = getPipCoord(backPipOrigin, pipHeight, pipWidth, in.texCoord);
     if (    0.0 < backPipCoord.x && backPipCoord.x < 1.0
         &&  0.0 < backPipCoord.y && backPipCoord.y < 1.0) {

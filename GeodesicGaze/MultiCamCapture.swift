@@ -26,6 +26,11 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     let logger = Logger()
 
+    private var staticFrontImageBuffer: CVPixelBuffer?
+    private var staticBackImageBuffer: CVPixelBuffer?
+    
+    private var useStaticImages: Bool = true
+    
     override init() {
         super.init()
         setupMultiCamSession()
@@ -98,6 +103,52 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                 multiCamSession.addConnection(backPreviewConnection)
             }
         }
+    }
+    
+    private func loadStaticImages() {
+        // Load static images for simulation
+        if let frontImage = UIImage(named: "front_camera_image.png"),
+           let backImage = UIImage(named: "back_camera_image.png") {
+            staticFrontImageBuffer = pixelBufferFromImage(image: frontImage)
+            staticBackImageBuffer = pixelBufferFromImage(image: backImage)
+        } else {
+            fatalError("Unable to load static images")
+        }
+    }
+    
+    private func pixelBufferFromImage(image: UIImage) -> CVPixelBuffer? {
+        guard let cgImage = image.cgImage else {
+            return nil
+        }
+
+        let options: [String: Any] = [
+            kCVPixelBufferCGImageCompatibilityKey as String: kCFBooleanTrue!,
+            kCVPixelBufferCGBitmapContextCompatibilityKey as String: kCFBooleanTrue!
+        ]
+
+        var pxbuffer: CVPixelBuffer?
+        let width = cgImage.width
+        let height = cgImage.height
+
+        let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32ARGB, options as CFDictionary, &pxbuffer)
+
+        guard status == kCVReturnSuccess, let buffer = pxbuffer else {
+            return nil
+        }
+
+        CVPixelBufferLockBaseAddress(buffer, [])
+
+        let pxdata = CVPixelBufferGetBaseAddress(buffer)
+        let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
+        let context = CGContext(data: pxdata, width: width, height: height, bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer), space: rgbColorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)
+
+        if let context = context {
+            context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        }
+
+        CVPixelBufferUnlockBaseAddress(buffer, [])
+
+        return buffer
     }
     
     func startRunning() {

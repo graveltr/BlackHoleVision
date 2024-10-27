@@ -13,6 +13,7 @@
 		6911EB4C2CAC6664002B3656 /* ComputeKernels.metal in Sources */ = {isa = PBXBuildFile; fileRef = 69F7B4492C8547B600057475 /* ComputeKernels.metal */; };
 		6967E4702C861FF800E5C57D /* Utilities.metal in Sources */ = {isa = PBXBuildFile; fileRef = 6967E46F2C861FF800E5C57D /* Utilities.metal */; };
 		6967E4742C862EC700E5C57D /* Physics.metal in Sources */ = {isa = PBXBuildFile; fileRef = 6967E4732C862EC700E5C57D /* Physics.metal */; };
+		69729F022CCEFE6800AF8E05 /* IMG_3923.PNG in Resources */ = {isa = PBXBuildFile; fileRef = 69729F012CCEFE6800AF8E05 /* IMG_3923.PNG */; };
 		6986092C2C74DB2800CD3B0F /* GeodesicGazeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6986092B2C74DB2800CD3B0F /* GeodesicGazeApp.swift */; };
 		6986092E2C74DB2800CD3B0F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6986092D2C74DB2800CD3B0F /* ContentView.swift */; };
 		698609302C74DB2A00CD3B0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6986092F2C74DB2A00CD3B0F /* Assets.xcassets */; };
@@ -53,6 +54,7 @@
 		6967E46F2C861FF800E5C57D /* Utilities.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Utilities.metal; sourceTree = "<group>"; };
 		6967E4722C862EB300E5C57D /* Physics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Physics.h; sourceTree = "<group>"; };
 		6967E4732C862EC700E5C57D /* Physics.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Physics.metal; sourceTree = "<group>"; };
+		69729F012CCEFE6800AF8E05 /* IMG_3923.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = IMG_3923.PNG; sourceTree = "<group>"; };
 		698609282C74DB2800CD3B0F /* GeodesicGaze.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeodesicGaze.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6986092B2C74DB2800CD3B0F /* GeodesicGazeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeodesicGazeApp.swift; sourceTree = "<group>"; };
 		6986092D2C74DB2800CD3B0F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 		6986092A2C74DB2800CD3B0F /* GeodesicGaze */ = {
 			isa = PBXGroup;
 			children = (
+				69729F012CCEFE6800AF8E05 /* IMG_3923.PNG */,
 				698F80222C9B28EC001301C1 /* expected_ellipticp_results.txt */,
 				698F801D2C9B25A8001301C1 /* expected_elliptice_results.txt */,
 				698F801C2C9B25A8001301C1 /* expected_ellipticf_results.txt */,
@@ -243,6 +246,7 @@
 				69BF16822C74DE100008D537 /* README.md in Resources */,
 				69F7B44C2C85576000057475 /* expected_results.txt in Resources */,
 				698F801E2C9B25A8001301C1 /* expected_ellipticf_results.txt in Resources */,
+				69729F022CCEFE6800AF8E05 /* IMG_3923.PNG in Resources */,
 				69F4DFDA2CC6D9F300C16C36 /* Main.storyboard in Resources */,
 				698609332C74DB2A00CD3B0F /* Preview Assets.xcassets in Resources */,
 				698609302C74DB2A00CD3B0F /* Assets.xcassets in Resources */,
@@ -431,6 +435,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"GeodesicGaze/Preview Content\"";
@@ -450,8 +455,9 @@
 				MARKETING_VERSION = 1.0;
 				MTLLINKER_FLAGS = "-v";
 				MTL_COMPILER_FLAGS = "-v";
-				PRODUCT_BUNDLE_IDENTIFIER = trevor.GeodesicGaze;
+				PRODUCT_BUNDLE_IDENTIFIER = com.GeodesicGaze;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -463,10 +469,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"GeodesicGaze/Preview Content\"";
-				DEVELOPMENT_TEAM = 53T58N547N;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 8ZFCMGZXV4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "App requires camera";
@@ -482,8 +491,10 @@
 				MARKETING_VERSION = 1.0;
 				MTLLINKER_FLAGS = "-v";
 				MTL_COMPILER_FLAGS = "-v";
-				PRODUCT_BUNDLE_IDENTIFIER = trevor.GeodesicGaze;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lupsasca.bhv;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Black Hole Vision Provisioning Profile";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
