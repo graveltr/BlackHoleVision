@@ -55,6 +55,7 @@
 		6967E4722C862EB300E5C57D /* Physics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Physics.h; sourceTree = "<group>"; };
 		6967E4732C862EC700E5C57D /* Physics.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Physics.metal; sourceTree = "<group>"; };
 		69729F012CCEFE6800AF8E05 /* IMG_3923.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = IMG_3923.PNG; sourceTree = "<group>"; };
+		69729F032CCF1D4300AF8E05 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		698609282C74DB2800CD3B0F /* GeodesicGaze.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeodesicGaze.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6986092B2C74DB2800CD3B0F /* GeodesicGazeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeodesicGazeApp.swift; sourceTree = "<group>"; };
 		6986092D2C74DB2800CD3B0F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -119,6 +120,7 @@
 		6986092A2C74DB2800CD3B0F /* GeodesicGaze */ = {
 			isa = PBXGroup;
 			children = (
+				69729F032CCF1D4300AF8E05 /* Info.plist */,
 				69729F012CCEFE6800AF8E05 /* IMG_3923.PNG */,
 				698F80222C9B28EC001301C1 /* expected_ellipticp_results.txt */,
 				698F801D2C9B25A8001301C1 /* expected_elliptice_results.txt */,
@@ -442,6 +444,8 @@
 				DEVELOPMENT_TEAM = 53T58N547N;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GeodesicGaze/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Black Hole Vision";
 				INFOPLIST_KEY_NSCameraUsageDescription = "App requires camera";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -458,9 +462,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.GeodesicGaze;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -478,6 +486,8 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 8ZFCMGZXV4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GeodesicGaze/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Black Hole Vision";
 				INFOPLIST_KEY_NSCameraUsageDescription = "App requires camera";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -495,9 +505,13 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Black Hole Vision Provisioning Profile";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

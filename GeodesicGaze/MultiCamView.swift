@@ -52,8 +52,9 @@ struct MultiCamView: UIViewControllerRepresentable {
             // TODO: fill this in
         }
         @objc func handleControlsButton(_ sender: UIButton) {
-            let currIsHidden = multiCamViewController!.controlsSubView.isHidden
-            multiCamViewController!.controlsSubView.isHidden = !currIsHidden
+            // let currIsHidden = multiCamViewController!.controlsSubView.isHidden
+            multiCamViewController!.fovSegmentedControl.isHidden = !(multiCamViewController!.fovSegmentedControl.isHidden)
+            multiCamViewController!.spacetimeSegmentedControl.isHidden = !(multiCamViewController!.spacetimeSegmentedControl.isHidden)
         }
 
         @objc func spinStepperValueChanged(_ sender: UIStepper) { 
@@ -101,7 +102,9 @@ struct MultiCamView: UIViewControllerRepresentable {
             multiCamViewController?.distanceStepper.isHidden = true
             multiCamViewController?.distanceStepperLabel.isHidden = true
             
-            multiCamViewController?.fovSegmentedControl.isEnabled = true
+            multiCamViewController?.fovSegmentedControl.selectedSegmentIndex = 0
+            multiCamViewController?.fovSegmentedControl.isEnabled = false
+            mixer.filterParameters.sourceMode = 1
 
             mixer.filterParameters.spaceTimeMode = 0
             mixer.needsNewLutTexture = true
@@ -232,6 +235,7 @@ struct MultiCamView: UIViewControllerRepresentable {
         viewController.aboutButton.isHidden = true
         viewController.distanceStepper.isHidden = true
         viewController.distanceStepperLabel.isHidden = true
+        viewController.fovSegmentedControl.isEnabled = false
 
         context.coordinator.multiCamViewController = viewController
         context.coordinator.mixer.filterParameters.a = context.coordinator.getCurrSpinValue()

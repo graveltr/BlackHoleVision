@@ -9,6 +9,7 @@ import AVFoundation
 import UIKit
 import Foundation
 import os
+import CoreImage
 
 protocol MultiCamCaptureDelegate: AnyObject {
     func processCameraPixelBuffers(frontCameraPixelBuffer: CVPixelBuffer, backCameraPixelBuffer: CVPixelBuffer)
@@ -29,11 +30,12 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     private var staticFrontImageBuffer: CVPixelBuffer?
     private var staticBackImageBuffer: CVPixelBuffer?
     
-    private var useStaticImages: Bool = true
+    private var useStaticImages: Bool = false
     
     override init() {
         super.init()
         setupMultiCamSession()
+        loadStaticImages()
     }
     
     private func setupMultiCamSession() {
@@ -107,8 +109,8 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     private func loadStaticImages() {
         // Load static images for simulation
-        if let frontImage = UIImage(named: "front_camera_image.png"),
-           let backImage = UIImage(named: "back_camera_image.png") {
+        if let frontImage = UIImage(named: "IMG_3923.PNG"),
+           let backImage = UIImage(named: "IMG_3923.PNG") {
             staticFrontImageBuffer = pixelBufferFromImage(image: frontImage)
             staticBackImageBuffer = pixelBufferFromImage(image: backImage)
         } else {
@@ -126,18 +128,17 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             kCVPixelBufferCGBitmapContextCompatibilityKey as String: kCFBooleanTrue!
         ]
 
-        var pxbuffer: CVPixelBuffer?
+        var rgbBuffer: CVPixelBuffer?
         let width = cgImage.width
         let height = cgImage.height
 
-        let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32ARGB, options as CFDictionary, &pxbuffer)
+        let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32ARGB, options as CFDictionary, &rgbBuffer)
 
-        guard status == kCVReturnSuccess, let buffer = pxbuffer else {
+        guard status == kCVReturnSuccess, let buffer = rgbBuffer else {
             return nil
         }
 
         CVPixelBufferLockBaseAddress(buffer, [])
-
         let pxdata = CVPixelBufferGetBaseAddress(buffer)
         let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
         let context = CGContext(data: pxdata, width: width, height: height, bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer), space: rgbColorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)
@@ -147,17 +148,57 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
 
         CVPixelBufferUnlockBaseAddress(buffer, [])
+        
+        return rgbToYUV(pixelBuffer: buffer)
+    }
+    
+    private func rgbToYUV(pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+        // Ensure the input buffer is in RGB format
+        guard CVPixelBufferGetPixelFormatType(pixelBuffer) == kCVPixelFormatType_32ARGB else {
+            print("Input buffer is not in RGB format")
+            return nil
+        }
 
-        return buffer
+        // Create a CoreImage context
+        let ciContext = CIContext(options: nil)
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+
+        // Create an attributes dictionary for the target YUV pixel buffer
+        let pixelBufferAttributes: [String: Any] = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange,
+            kCVPixelBufferWidthKey as String: CVPixelBufferGetWidth(pixelBuffer),
+            kCVPixelBufferHeightKey as String: CVPixelBufferGetHeight(pixelBuffer)
+        ]
+
+        // Create YUV PixelBuffer
+        var yuvBuffer: CVPixelBuffer?
+        let status = CVPixelBufferCreate(kCFAllocatorDefault, CVPixelBufferGetWidth(pixelBuffer), CVPixelBufferGetHeight(pixelBuffer), kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, pixelBufferAttributes as CFDictionary, &yuvBuffer)
+        
+        guard status == kCVReturnSuccess, let yuvPixelBuffer = yuvBuffer else {
+            print("Failed to create YUV pixel buffer")
+            return nil
+        }
+
+        // Render the CIImage into the YUV pixel buffer
+        ciContext.render(ciImage, to: yuvPixelBuffer)
+        
+        return yuvPixelBuffer
     }
     
     func startRunning() {
         logger.info("Starting run ...")
-        multiCamSession.startRunning()
+        if !useStaticImages {
+            multiCamSession.startRunning()
+        } else {
+            simulateStaticImageFeed()
+        }
     }
     
     func stopRunning() {
-        multiCamSession.stopRunning()
+        logger.info("Stopping run ...")
+        if !useStaticImages {
+            multiCamSession.stopRunning()
+        }
     }
     
     func setupPreviewLayers(frontView: UIView, backView: UIView) {
@@ -177,12 +218,17 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         logger.debug("Running capture output ...")
+        if useStaticImages {
+            // Do nothing if we are using static images
+            return
+        }
         if connection == frontCameraConnection {
             processFrontCameraBuffer(sampleBuffer)
         } else if connection == backCameraConnection {
             processBackCameraBuffer(sampleBuffer)
         }
     }
+    
     
     private func processBackCameraBuffer(_ backCameraSampleBuffer: CMSampleBuffer) {
         logger.info("Caching sample buffer from back camera")
@@ -206,5 +252,19 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         
         delegate?.processCameraPixelBuffers(frontCameraPixelBuffer: frontCameraPixelBuffer,
                                             backCameraPixelBuffer: backCameraPixelBuffer)
+    }
+    
+    private func simulateStaticImageFeed() {
+        logger.info("Simulating video feed with static images...")
+        
+        guard let frontBuffer = staticFrontImageBuffer, let backBuffer = staticBackImageBuffer else {
+            fatalError("Static image buffers are not set")
+        }
+        
+        let simulatedSampleBufferInterval: TimeInterval = 1.0 / 30.0  // 30 FPS
+        
+        Timer.scheduledTimer(withTimeInterval: simulatedSampleBufferInterval, repeats: true) { timer in
+            self.delegate?.processCameraPixelBuffers(frontCameraPixelBuffer: frontBuffer, backCameraPixelBuffer: backBuffer)
+        }
     }
 }
