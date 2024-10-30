@@ -8,4 +8,6 @@ The user interface is implemented using Swift and the SwiftUI framework. The len
 
 Made in collaboration with Dominic Chang (personal: https://dominic-chang.com/ GitHub: https://github.com/dominic-chang). 
 
+The code was written at Vanderbilt University by Trevor Gravely with input from Dr. Roman Berens and Prof. Alex Lupsasca. We are grateful to Dominic Chang for sharing his experience with his own lensing software, available on his personal website, https://dominic-chang.com/, or his GitHub, https://github.com/dominic-chang). This project was supported by CAREER award PHY-2340457 and grant AST-2307888 from the National Science Foundation.
+
 Metal implementations of the Jacobi elliptic functions, incomplete elliptic integrals, and complete elliptic integrals are ported from https://www.gnu.org/software/gsl/. 
