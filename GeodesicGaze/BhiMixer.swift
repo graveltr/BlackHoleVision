@@ -102,11 +102,16 @@ class BhiMixer {
     func initializeSizeDependentData(width: Int, height: Int) {
         let descriptor = MTLTextureDescriptor()
         descriptor.pixelFormat = .rgba32Float
+        /*
         descriptor.width = width
         descriptor.height = height
+        */
+        descriptor.width = 1920
+        descriptor.height = 1080
         descriptor.usage = [.shaderRead, .shaderWrite]
         
         lutTexture = device.makeTexture(descriptor: descriptor)
+        print("texture width: \(lutTexture.width), texture height: \(lutTexture.height)")
         
         debugMatrixWidth = lutTexture.width;
         debugMatrixHeight = lutTexture.height;
@@ -458,7 +463,7 @@ class BhiMixer {
         let startCol = textureWidth / 2 - shadowWidth / 2
         let endCol = textureWidth / 2 + shadowWidth / 2
         
-        let seekWidth = 70
+        let seekWidth = 140
         let startRow = textureHeight / 2 - seekWidth / 2
         let endRow = textureHeight / 2 + seekWidth / 2
         
@@ -512,12 +517,22 @@ class BhiMixer {
             let y2yChannel  = endPixely
             let k1yChannel  = yChannelKValues.1
             let k2yChannel  = yChannelKValues.2
-
+            
+            
+            var numErroredRows = 0
             for row in startRow...endRow {
                 let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                let currX = data[arrIndex]
+                let currY = data[arrIndex + 1]
+                let currErr1 = data[arrIndex + 2]
+                let currErr2 = data[arrIndex + 3]
                 
-                let factor: Float = Float(row - startRow) / Float(endRow - startRow + 1)
-                
+                if fEqual(currErr1, 0.0) && fEqual(currErr2, 0.0) {
+                    print("row: \(row) \t val: \(currX)")
+                } else {
+                    numErroredRows = numErroredRows + 1
+                }
+
                 /*
                 let interpx = mix(startPixelx, endPixelx, factor)
                 let interpy = mix(startPixely, endPixely, factor)
@@ -535,8 +550,21 @@ class BhiMixer {
                 data[arrIndex + 2]  = 0.0
                 data[arrIndex + 3]  = 0.0
             }
+            print("col: \(col) \t numErrors: \(numErroredRows)")
         }
         
+        /*
+        for col in combinedRange {
+            for row in startRow...endRow {
+                let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                data[arrIndex] = 0.0
+                data[arrIndex + 1] = 0.0
+                data[arrIndex + 2] = 10.0
+                data[arrIndex + 3] = 10.0
+            }
+        }
+        */
+
         lutTexture.replace(region: MTLRegionMake2D(0, 0, textureWidth, textureHeight),
                            mipmapLevel: 0,
                            withBytes: data,

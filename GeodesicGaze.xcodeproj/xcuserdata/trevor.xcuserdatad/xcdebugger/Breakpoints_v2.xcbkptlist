@@ -74,24 +74,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "126"
-            endingLineNumber = "126"
-            landmarkName = "mix(frontCameraPixelBuffer:backCameraPixelBuffer:in:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "BC93544B-49C1-4294-BFB7-67FC7A18542F"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "GeodesicGaze/BhiMixer.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "210"
-            endingLineNumber = "210"
+            startingLineNumber = "131"
+            endingLineNumber = "131"
             landmarkName = "mix(frontCameraPixelBuffer:backCameraPixelBuffer:in:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -106,8 +90,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "219"
-            endingLineNumber = "219"
+            startingLineNumber = "224"
+            endingLineNumber = "224"
             landmarkName = "mix(frontCameraPixelBuffer:backCameraPixelBuffer:in:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -147,22 +131,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "A7B27632-04A1-4497-AC86-E96929EDA690"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "GeodesicGaze/BhiMixer.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "209"
-            endingLineNumber = "209"
-            landmarkName = "mix(frontCameraPixelBuffer:backCameraPixelBuffer:in:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "9B3F4485-D1B4-4CAE-94F6-93E41BBDBE4D"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -170,8 +138,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "438"
-            endingLineNumber = "438"
+            startingLineNumber = "443"
+            endingLineNumber = "443"
             landmarkName = "cpuPostProcess(rowInterp:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -180,6 +148,22 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "A4333985-BFD7-4364-88F3-858650C43D97"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "GeodesicGaze/BhiMixer.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "362"
+            endingLineNumber = "362"
+            landmarkName = "cpuPostProcess(rowInterp:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "9DF92E02-FA72-44BA-9993-8EBFFD3B758D"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -195,22 +179,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "9DF92E02-FA72-44BA-9993-8EBFFD3B758D"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "GeodesicGaze/BhiMixer.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "352"
-            endingLineNumber = "352"
-            landmarkName = "cpuPostProcess(rowInterp:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "05CFD82A-0258-4C4A-ADCF-2158DAE8FF79"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -218,8 +186,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "358"
-            endingLineNumber = "358"
+            startingLineNumber = "363"
+            endingLineNumber = "363"
             landmarkName = "cpuPostProcess(rowInterp:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -282,8 +250,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "258"
-            endingLineNumber = "258"
+            startingLineNumber = "263"
+            endingLineNumber = "263"
             landmarkName = "createTexture(from:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -330,8 +298,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "566"
-            endingLineNumber = "566"
+            startingLineNumber = "594"
+            endingLineNumber = "594"
             landmarkName = "testInverse()"
             landmarkType = "7">
          </BreakpointContent>
@@ -346,8 +314,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "556"
-            endingLineNumber = "556"
+            startingLineNumber = "584"
+            endingLineNumber = "584"
             landmarkName = "testInverse()"
             landmarkType = "7">
          </BreakpointContent>
@@ -362,8 +330,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "564"
-            endingLineNumber = "564"
+            startingLineNumber = "592"
+            endingLineNumber = "592"
             landmarkName = "testInverse()"
             landmarkType = "7">
          </BreakpointContent>
@@ -378,8 +346,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "569"
-            endingLineNumber = "569"
+            startingLineNumber = "597"
+            endingLineNumber = "597"
             landmarkName = "testSplineParameters()"
             landmarkType = "7">
          </BreakpointContent>
@@ -394,8 +362,8 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "573"
-            endingLineNumber = "573"
+            startingLineNumber = "601"
+            endingLineNumber = "601"
             landmarkName = "testSplineParameters()"
             landmarkType = "7">
          </BreakpointContent>
@@ -410,9 +378,89 @@
             filePath = "GeodesicGaze/BhiMixer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "574"
-            endingLineNumber = "574"
+            startingLineNumber = "602"
+            endingLineNumber = "602"
             landmarkName = "testSplineParameters()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "24A07CF6-0600-4B08-BA41-06A2AA4E7E5E"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "GeodesicGaze/BhiMixer.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "523"
+            endingLineNumber = "523"
+            landmarkName = "cpuPostProcessStatic()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D86AE6AA-38FC-4949-BAC1-08DDE173AE35"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "GeodesicGaze/BhiMixer.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "502"
+            endingLineNumber = "502"
+            landmarkName = "cpuPostProcessStatic()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "E61F501B-D374-47B2-9F3F-36CFA03A3D5B"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "GeodesicGaze/BhiMixer.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "470"
+            endingLineNumber = "470"
+            landmarkName = "cpuPostProcessStatic()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "8C55A25B-A734-4F91-BB01-716078A5B95D"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "GeodesicGaze/BhiMixer.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "476"
+            endingLineNumber = "476"
+            landmarkName = "cpuPostProcessStatic()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "46CF1EFA-9843-481A-BDD9-1893125CDEB1"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "GeodesicGaze/BhiMixer.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "103"
+            endingLineNumber = "103"
+            landmarkName = "initializeSizeDependentData(width:height:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
