@@ -439,6 +439,8 @@ class BhiMixer {
     }
     
     private func cpuPostProcessStatic() {
+        testSplineParameters()
+        
         let textureWidth = lutTexture.width
         let textureHeight = lutTexture.height
         
@@ -462,25 +464,72 @@ class BhiMixer {
         
         let combinedRange = Array(0..<startCol) + Array(endCol..<textureWidth)
 
+        /*
+         * For each column (horizontal slice in image), loop through
+         * a set number of rows centered in the middle of the images
+         * and interpolate from one side to the other.
+         */
         for col in combinedRange {
             
+            let arrIdxOfOneAboveStartPixel = rowColToArrIdx(row: startRow - 1, col: col, width: textureWidth)
             let arrIdxOfStartPixel = rowColToArrIdx(row: startRow, col: col, width: textureWidth)
             let arrIdxOfEndPixel = rowColToArrIdx(row: endRow, col: col, width: textureWidth)
+            let arrIdxOfOneBelowEndPixel = rowColToArrIdx(row: endRow + 1, col: col, width: textureWidth)
+
+            let oneAboveStartPixelx = data[arrIdxOfOneAboveStartPixel]
+            let oneAboveStartPixely = data[arrIdxOfOneAboveStartPixel + 1]
             
             let startPixelx = data[arrIdxOfStartPixel]
             let startPixely = data[arrIdxOfStartPixel + 1]
             
             let endPixelx = data[arrIdxOfEndPixel]
             let endPixely = data[arrIdxOfEndPixel + 1]
+            
+            let oneBelowEndPixelx = data[arrIdxOfOneBelowEndPixel]
+            let oneBelowEndPixely = data[arrIdxOfOneBelowEndPixel + 1]
+
+            // We compute a four point spline interpolation in both channels
+            let xChannelKValues = computeFourPointSplineParameters(x0: Float(arrIdxOfOneAboveStartPixel), y0: oneAboveStartPixelx,
+                                                                   x1: Float(arrIdxOfStartPixel),         y1: startPixelx,
+                                                                   x2: Float(arrIdxOfEndPixel),           y2: endPixelx,
+                                                                   x3: Float(arrIdxOfOneBelowEndPixel),   y3: oneBelowEndPixelx)
+            
+            let yChannelKValues = computeFourPointSplineParameters(x0: Float(arrIdxOfOneAboveStartPixel), y0: oneAboveStartPixely,
+                                                                   x1: Float(arrIdxOfStartPixel),         y1: startPixely,
+                                                                   x2: Float(arrIdxOfEndPixel),           y2: endPixely,
+                                                                   x3: Float(arrIdxOfOneBelowEndPixel),   y3: oneBelowEndPixely)
+
+            // For passing to computeSplineValue.
+            let x1          = Float(arrIdxOfStartPixel)
+            let x2          = Float(arrIdxOfEndPixel)
+            
+            let y1xChannel  = startPixelx
+            let y2xChannel  = endPixelx
+            let k1xChannel  = xChannelKValues.1
+            let k2xChannel  = xChannelKValues.2
+
+            let y1yChannel  = startPixely
+            let y2yChannel  = endPixely
+            let k1yChannel  = yChannelKValues.1
+            let k2yChannel  = yChannelKValues.2
 
             for row in startRow...endRow {
                 let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
                 
                 let factor: Float = Float(row - startRow) / Float(endRow - startRow + 1)
                 
+                /*
                 let interpx = mix(startPixelx, endPixelx, factor)
                 let interpy = mix(startPixely, endPixely, factor)
+                */
+                let interpx = computeSplineValue(x1: x1, x2: x2,
+                                                 y1: y1xChannel, y2: y2xChannel,
+                                                 k1: k1xChannel, k2: k2xChannel, Float(arrIndex))
                 
+                let interpy = computeSplineValue(x1: x1, x2: x2,
+                                                 y1: y1yChannel, y2: y2yChannel,
+                                                 k1: k1yChannel, k2: k2yChannel, Float(arrIndex))
+
                 data[arrIndex]      = interpx
                 data[arrIndex + 1]  = interpy
                 data[arrIndex + 2]  = 0.0
@@ -492,6 +541,190 @@ class BhiMixer {
                            mipmapLevel: 0,
                            withBytes: data,
                            bytesPerRow: bytesPerRow)
+    }
+    
+    private func printMatrix(matrix: [[Float]]) {
+        for row in matrix {
+            for value in row {
+                print(String(format: "%.2f", value), terminator: "\t")
+            }
+            print()
+        }
+    }
+    
+    private func testInverse() {
+        let matrix: [[Float]] = [
+            [4, 7, 2, 3],
+            [3, 6, 1, 4],
+            [2, 5, 3, 5],
+            [1, 8, 7, 9]
+        ]
+        
+        if let invertedMatrix = inverseMatrix4x4(matrix: matrix) {
+            printMatrix(matrix: invertedMatrix)
+        }
+    }
+    
+    private func testSplineParameters() {
+        let res = computeFourPointSplineParameters(x0: -2.0944, y0: -0.866925,
+                                                   x1: -1.5708, y1: -1.0,
+                                                   x2: -1.0472, y2: -0.866025,
+                                                   x3: -0.523599, y3: -0.5)
+        print(res)
+    }
+    
+    // Operates under the assumption that the x value is always in the 2nd of the
+    // 3 intervals (4 point spline).
+    private func computeSplineValue(x1: Float, x2: Float, y1: Float, y2: Float, k1: Float, k2: Float, _ x: Float) -> Float {
+        let t = (x - x1) / (x2 - x1)
+        let a = k1 * (x2 - x1) - (y2 - y1)
+        let b = -1.0 * k2 * (x2 - x1) + (y2 - y1)
+        
+        return (1.0 - t) * y1 + t * y2 + t * (1.0 - t) * ((1.0 - t) * a + t * b)
+    }
+    
+    private func computeFourPointSplineParameters(x0: Float, y0: Float,
+                                                  x1: Float, y1: Float,
+                                                  x2: Float, y2: Float,
+                                                  x3: Float, y3: Float) -> (Float, Float, Float, Float) {
+        let a11 = 2.0 / (x1 - x0);
+        let a12 = 1.0 / (x1 - x0);
+        
+        let a21 = 1.0 / (x1 - x0);
+        let a22 = 2.0 * ((1.0 / (x1 - x0)) + (1.0 / (x2 - x1)));
+        let a23 = 1.0 / (x2 - x1);
+        
+        let a32 = 1.0 / (x2 - x1);
+        let a33 = 2.0 * ((1.0 / (x2 - x1)) + (1.0 / (x3 - x2)));
+        let a34 = 1.0 / (x3 - x2);
+        
+        let a43 = 1.0 / (x3 - x2);
+        let a44 = 2.0 / (x3 - x2);
+        
+        let b1 = 3.0 * ((y1 - y0)/((x1 - x0) * (x1 - x0)));
+        let b2 = 3.0 * (((y1 - y0) / ((x1 - x0) * (x1 - x0))) + ((y2 - y1) / ((x2 - x1) * (x2 - x1))));
+        let b3 = 3.0 * (((y2 - y1) / ((x2 - x1) * (x2 - x1))) + ((y3 - y2) / ((x3 - x2) * (x3 - x2))));
+        let b4 = 3.0 * ((y3 - y2)/((x3 - x2) * (x3 - x2)));
+        
+        let A: [[Float]] = [
+            [a11, a12, 0.0, 0.0],
+            [a21, a22, a23, 0.0],
+            [0.0, a32, a33, a34],
+            [0.0, 0.0, a43, a44]
+        ]
+        
+        guard let invertedMatrix = inverseMatrix4x4(matrix: A) else {
+            fatalError("No inverse")
+        }
+        
+        let k1 = b1 * invertedMatrix[0][0] + b2 * invertedMatrix[0][1] + b3 * invertedMatrix[0][2] + b4 * invertedMatrix[0][3]
+        let k2 = b1 * invertedMatrix[1][0] + b2 * invertedMatrix[1][1] + b3 * invertedMatrix[1][2] + b4 * invertedMatrix[1][3]
+        let k3 = b1 * invertedMatrix[2][0] + b2 * invertedMatrix[2][1] + b3 * invertedMatrix[2][2] + b4 * invertedMatrix[2][3]
+        let k4 = b1 * invertedMatrix[3][0] + b2 * invertedMatrix[3][1] + b3 * invertedMatrix[3][2] + b4 * invertedMatrix[3][3]
+
+        return (k1, k2, k3, k4);
+    }
+    
+    func inverseMatrix4x4(matrix: [[Float]]) -> [[Float]]? {
+        let determinant = determinant4x4(matrix: matrix)
+        
+        if determinant == 0 {
+            return nil
+        }
+        
+        let cofactors = cofactor4x4(matrix: matrix)
+        let adjugate = transpose(matrix: cofactors)
+        
+        var inverse = [[Float]](repeating: [Float](repeating: 0.0, count: 4), count: 4)
+        for i in 0..<4 {
+            for j in 0..<4 {
+                inverse[i][j] = adjugate[i][j] / determinant
+            }
+        }
+        
+        return inverse
+    }
+    
+    private func determinant3x3(matrix: [[Float]]) -> Float {
+        let a = matrix[0][0]
+        let b = matrix[0][1]
+        let c = matrix[0][2]
+        
+        let d = matrix[1][0]
+        let e = matrix[1][1]
+        let f = matrix[1][2]
+        
+        let g = matrix[2][0]
+        let h = matrix[2][1]
+        let i = matrix[2][2]
+        
+        return  a * (e * i - f * h) -
+                b * (d * i - f * g) +
+                c * (d * h - e * g)
+    }
+    
+    private func determinant4x4(matrix: [[Float]]) -> Float {
+        let a = matrix[0][0]
+        let b = matrix[0][1]
+        let c = matrix[0][2]
+        let d = matrix[0][3]
+        
+        let e = matrix[1][0]
+        let f = matrix[1][1]
+        let g = matrix[1][2]
+        let h = matrix[1][3]
+        
+        let i = matrix[2][0]
+        let j = matrix[2][1]
+        let k = matrix[2][2]
+        let l = matrix[2][3]
+        
+        let m = matrix[3][0]
+        let n = matrix[3][1]
+        let o = matrix[3][2]
+        let p = matrix[3][3]
+        
+        return  a * determinant3x3(matrix: [[f,g,h], [j,k,l], [n,o,p]]) -
+                b * determinant3x3(matrix: [[e,g,h], [i,k,l], [m,o,p]]) +
+                c * determinant3x3(matrix: [[e,f,h], [i,j,l], [m,n,p]]) -
+                d * determinant3x3(matrix: [[e,f,g], [i,j,k], [m,n,o]])
+    }
+    
+    private func cofactor4x4(matrix: [[Float]]) -> [[Float]] {
+        var cofactors = [[Float]](repeating: [Float](repeating: 0.0, count: 4), count: 4)
+        for i in 0..<4 {
+            for j in 0..<4 {
+                var submatrix = [[Float]]()
+                for k in 0..<4 {
+                    if k != i {
+                        var row = [Float]()
+                        for l in 0..<4 {
+                            if l != j {
+                                row.append(matrix[k][l])
+                            }
+                        }
+                        submatrix.append(row)
+                    }
+                }
+                cofactors[i][j] = determinant3x3(matrix: submatrix) * ((i + j) % 2 == 0 ? 1 : -1)
+            }
+        }
+        
+        return cofactors
+    }
+    
+    private func transpose(matrix: [[Float]]) -> [[Float]] {
+        let rowCount = matrix.count
+        let colCount = matrix[0].count
+        var transMatrix = [[Float]](repeating: [Float](repeating: 0.0, count: rowCount), count: colCount)
+        
+        for i in 0..<rowCount {
+            for j in 0..<colCount {
+                transMatrix[i][j] = matrix[j][i]
+            }
+        }
+        
+        return transMatrix
     }
 
     private func fEqual(_ a: Float, _ b: Float, epsilon: Float = 1e-6) -> Bool {

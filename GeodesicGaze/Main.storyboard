@@ -39,14 +39,9 @@
                                 </buttonConfiguration>
                             </button>
                             <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="l1O-BF-wv8">
-                                <rect key="frame" x="38" y="360" width="339" height="202"/>
+                                <rect key="frame" x="20" y="180" width="339" height="202"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
-                                    <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" maximumValue="4" translatesAutoresizingMaskIntoConstraints="NO" id="DGt-gs-ky1">
-                                        <rect key="frame" x="194" y="64" width="94" height="32"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <color key="backgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
-                                    </stepper>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Spin:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G7z-Zo-1v8">
                                         <rect key="frame" x="194" y="26" width="39" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -90,17 +85,24 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="QYR-JU-smz">
-                                <rect key="frame" x="66" y="674" width="243" height="32"/>
+                                <rect key="frame" x="5" y="674" width="365" height="32"/>
                                 <color key="backgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
                                 <segments>
                                     <segment title="No black hole"/>
                                     <segment title="Static black hole"/>
+                                    <segment title="Kerr black hole"/>
                                 </segments>
                             </segmentedControl>
+                            <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" maximumValue="4" translatesAutoresizingMaskIntoConstraints="NO" id="DGt-gs-ky1">
+                                <rect key="frame" x="140.66666666666666" y="611" width="94" height="32"/>
+                                <color key="backgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
+                            </stepper>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="DGt-gs-ky1" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="1Ab-Mc-mnV"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="DGt-gs-ky1" secondAttribute="bottom" constant="135" id="A5o-Sh-k5s"/>
                             <constraint firstItem="des-wE-Uhc" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="50" id="Qfg-eh-VMd"/>
                             <constraint firstItem="sWv-We-cV7" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="Qgd-BB-IV8"/>
                             <constraint firstItem="des-wE-Uhc" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="TBF-ep-1x5"/>

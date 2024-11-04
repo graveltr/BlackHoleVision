@@ -15,5 +15,6 @@ struct ContentView: View {
     var body: some View {
         MultiCamView(counter: $counter, selectedFilter: $selectedFilter)
             .edgesIgnoringSafeArea(/*@START_MENU_TOKEN@*/.all/*@END_MENU_TOKEN@*/)
+        //MultiCamView(counter: $counter, selectedFilter: $selectedFilter)
     }
 }
