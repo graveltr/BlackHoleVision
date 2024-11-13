@@ -386,26 +386,31 @@ float2 computeUplusUminus(float a, float eta, float lambda) {
     float epsilon = alpha / (deltaTheta * deltaTheta);
     
     float uplus, uminus;
-    if (epsilon < 0.001) {
-        float linearOrder = (sqrt(deltaTheta * deltaTheta) / 2.0) * epsilon;
+    if (epsilon < 0.01) {
+        // float linearOrder       = (sqrt(deltaTheta * deltaTheta) / 2.0) * epsilon;
+        // float quadraticOrder    = (1.0 / 8.0) * (sqrt(deltaTheta * deltaTheta)) * epsilon * epsilon;
         
+        float linearOrder, quadraticOrder, thirdOrder;
         if (deltaTheta < 0.0) {
-            uplus = linearOrder;
-            uminus = deltaTheta - sqrt(deltaTheta * deltaTheta) - linearOrder;
+            // Convention is that we take the signfull term of the uplus expansion
+            linearOrder    = (-1.0 * deltaTheta / 2.0) * epsilon;
+            quadraticOrder = (deltaTheta / 8.0) * epsilon * epsilon;
+            thirdOrder     = (-1.0 * deltaTheta / 16.0) * epsilon * epsilon * epsilon;
+            
+            uplus  = linearOrder + quadraticOrder + thirdOrder;
+            uminus = 2.0 * deltaTheta - linearOrder - quadraticOrder - thirdOrder;
         } else {
-            uplus = deltaTheta + sqrt(deltaTheta * deltaTheta) + linearOrder;
-            uminus = -1.0 * linearOrder;
+            linearOrder    = (deltaTheta / 2.0) * epsilon;
+            quadraticOrder = -1.0 * (deltaTheta / 8.0) * epsilon * epsilon;
+            thirdOrder     = (deltaTheta / 16.0) * epsilon * epsilon * epsilon;
+
+            uplus  = 2.0 * deltaTheta + linearOrder + quadraticOrder + thirdOrder;
+            uminus = -1.0 * linearOrder - quadraticOrder - thirdOrder;
         }
     } else {
         uplus = deltaTheta + sqrt(deltaTheta * deltaTheta + (eta / (a * a)));
         uminus = deltaTheta - sqrt(deltaTheta * deltaTheta + (eta / (a * a)));
     }
-    
-    /*
-    if (1.0 <= uplus) {
-        uplus = 0.999;
-    }
-    */
     
     return float2(uplus, uminus);
 }
@@ -498,7 +503,6 @@ Result computeIminus(float rplus, float rminus, float r1, float r2, float r3, fl
     float mathcalIplusatro = -1.0 * Pi2ofro - F2ofro / (rminus - r3);
     float mathcalIplusatrs = -1.0 * Pi2ofrs - F2ofrs / (rminus - r3);
     
-    // TODO: is this sign correct???
     result.val = (mathcalIplusatro + mathcalIplusatrs);
     result.status = SUCCESS;
     return result;

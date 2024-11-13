@@ -407,16 +407,17 @@ kernel void crasher_compute_kernel(const device float *dummyData [[buffer(0)]],
     float backTextureWidth = 1920.0;
     float backTextureHeight = 1080.0;
     
-    float2 inCoord = float2(0.286231875, 0.521205366);
-    // LenseTextureCoordinateResultP lenseResult = kerrLenseTextureCoordinateP(inCoord, 0);
-    // result.GphiStatus = lenseResult.status;
+    float col = 9.0;
+    float row = 541.0;
+    
+    float2 inCoord = float2(col / backTextureWidth, row / backTextureHeight);
     
     /*
      * The convention we use is to call the camera screen the "source" since we
      * ray trace from this location back into the geometry.
      */
     float M = 1.0;
-    float a = 0.1;
+    float a = 0.9;
     float thetas = M_PI_F / 2.0;
     float rs = 1000.0;
     float ro = rs;
@@ -440,46 +441,62 @@ kernel void crasher_compute_kernel(const device float *dummyData [[buffer(0)]],
     float eta = (alpha * alpha - a * a) * cos(thetas) * cos(thetas) + beta * beta;
     float nuthetas = sign(beta);
 
-    // We don't currently handle the case of vortical geodesics
     if (eta <= 0.0) { }
+    
+    /*
+    KerrLenseResult kerrLenseResult = kerrLense(a, M, thetas, nuthetas, ro, rs, eta, lambda);
+    float phif = kerrLenseResult.phif;
+    float thetaf = acos(kerrLenseResult.costhetaf);
+    
+    float3 rotatedSphericalCoordinates = rotateSphericalCoordinate(float3(rs, thetas, 0.0),
+                                                                   float3(ro, thetaf, phif));
+    
+    float phifNormalized = normalizeAngle(rotatedSphericalCoordinates.z);
+    thetaf = rotatedSphericalCoordinates.y;
+    
+    float oneTwoBdd = M_PI_F / 2.0;
+    float threeFourBdd = 3.0 * M_PI_F / 2.0;
+    
+    float v = thetaf / M_PI_F;
+    float u = 0.0;
+    
+    // If in quadrant I
+    if (0.0 <= phifNormalized && phifNormalized <= oneTwoBdd) {
+        u = 0.5 + 0.5 * (phifNormalized / oneTwoBdd);
+    } else if (threeFourBdd <= phifNormalized && phifNormalized <= 2.0 * M_PI_F) { // quadrant IV
+        u = 0.5 * ((phifNormalized - threeFourBdd) / (2.0 * M_PI_F - threeFourBdd));
+    } else { // II or III
+        u = (phifNormalized - oneTwoBdd) / (threeFourBdd - oneTwoBdd);
+    }
+    result.IrValue = u;
+    result.IphiValue = v;
+    */
+    
     
     KerrRadialRootsResult rootsResult = kerrRadialRoots(a, M, eta, lambda);
     result.rootsResultStatus = rootsResult.status;
-    
+     
     float2 roots[4];
     roots[0] = rootsResult.roots[0];
     roots[1] = rootsResult.roots[1];
     roots[2] = rootsResult.roots[2];
     roots[3] = rootsResult.roots[3];
-    
-    // result.IphiStatus = 1111;
-    
-    // If not in case (2), then black hole emission.
+     
     if (!(isReal(roots[0]) &&
           isReal(roots[1]) &&
           isReal(roots[2]) &&
           isReal(roots[3]))) {
         result.IphiStatus = -1000;
         result.ifInput = true;
-    } else {
-        result.ifInput = false;
-    }
-    
-    /*
-    result.IrValue = roots[0].x;
-    result.cosThetaObserverValue = roots[0].y;
-    result.GphiValue = roots[1].x;
-    result.mathcalGphisValue = roots[1].y;
-    result.psiTauValue = roots[2].x;
-    result.mathcalGthetasValue = roots[2].y;
-    result.ellipticPValue = roots[3].x;
-    result.IphiValue = roots[3].y;
-    */
-    
+     } else {
+         result.ifInput = false;
+     }
+
     float r1 = roots[0].x;
     float r2 = roots[1].x;
     float r3 = roots[2].x;
     float r4 = roots[3].x;
+    
 
     float rplus = M + sqrt(M * M - a * a);
     if (r4 < rplus) {
@@ -496,21 +513,76 @@ kernel void crasher_compute_kernel(const device float *dummyData [[buffer(0)]],
     float cosThetaObserver = cosThetaObserverResult.val;
     result.cosThetaObserverValue = cosThetaObserver;
     result.cosThetaObserverStatus = cosThetaObserverResult.status;
+    
 
-    /*
     Result GphiResult = computeGphi(nuthetas, tau, a, M, thetas, eta, lambda);
     float Gphi = GphiResult.val;
     result.GphiValue = Gphi;
     result.GphiStatus = GphiResult.status;
-    */
+    
+    Result IphiResult = computeIphi(a, M, eta, lambda, ro, rs, r1, r2, r3, r4);
+    float Iphi = IphiResult.val;
+    result.IphiValue = IphiResult.val;
+    result.IphiStatus = IphiResult.status;
+    
+    
+    
+    result.IrValue = -1;
+    result.IphiValue = -1;
+    result.GphiValue = -1;
+    
+    result.t1 = -1;
+    result.t2 = -1;
+
+    float deltaTheta = (1.0 / 2.0) * (1.0 - (eta + lambda * lambda) / (a * a));
+    
+    float alphap = eta / (a * a);
+    float epsilon = alphap / (deltaTheta * deltaTheta);
+    
+    float uplus, uminus;
+    if (epsilon < 0.01) {
+        // float linearOrder       = (sqrt(deltaTheta * deltaTheta) / 2.0) * epsilon;
+        // float quadraticOrder    = (1.0 / 8.0) * (sqrt(deltaTheta * deltaTheta)) * epsilon * epsilon;
+        
+        float linearOrder, quadraticOrder, thirdOrder;
+        if (deltaTheta < 0.0) {
+            // Convention is that we take the signfull term of the uplus expansion
+            linearOrder    = (-1.0 * deltaTheta / 2.0) * epsilon;
+            quadraticOrder = (deltaTheta / 8.0) * epsilon * epsilon;
+            thirdOrder     = (-1.0 * deltaTheta / 16.0) * epsilon * epsilon * epsilon;
+            
+            uplus  = linearOrder + quadraticOrder + thirdOrder;
+            uminus = 2.0 * deltaTheta - linearOrder - quadraticOrder - thirdOrder;
+        } else {
+            linearOrder    = (deltaTheta / 2.0) * epsilon;
+            quadraticOrder = -1.0 * (deltaTheta / 8.0) * epsilon * epsilon;
+            thirdOrder     = (deltaTheta / 16.0) * epsilon * epsilon * epsilon;
+
+            uplus  = 2.0 * deltaTheta + linearOrder + quadraticOrder + thirdOrder;
+            uminus = -1.0 * linearOrder - quadraticOrder - thirdOrder;
+        }
+        
+        result.IrValue = linearOrder;
+        result.IphiValue = quadraticOrder;
+        result.GphiValue = thirdOrder;
+        
+        result.t1 = uplus;
+        result.t2 = deltaTheta;
+    } else {
+        uplus = deltaTheta + sqrt(deltaTheta * deltaTheta + (eta / (a * a)));
+        uminus = deltaTheta - sqrt(deltaTheta * deltaTheta + (eta / (a * a)));
+    }
+    
+    
     
     // START UNWINDING GPHI
-    
+    /*
     float2 uplusUminus = computeUplusUminus(a, eta, lambda);
     
     float uplus = uplusUminus.x;
     float uminus = uplusUminus.y;
-    
+    */
+    /*
     Result mathcalGphiResult = mathcalGphi(a, thetas, uplus, uminus);
     float mathcalGphis = mathcalGphiResult.val;
     result.mathcalGphisValue = mathcalGphis;
@@ -525,10 +597,12 @@ kernel void crasher_compute_kernel(const device float *dummyData [[buffer(0)]],
     result.ellipticPValue = ellipticPResult.val;
     result.ellipticPStatus = ellipticPResult.status;
     
-    result.t1 = uplus / uminus;
-    result.t2 = uplus; 
+    result.t1 = uplus;
+    result.t2 = uplus / uminus;
+    */
+    // START UNWINDING GPHI
     
-    // END UNWINDING GPHI
+    // result.t1 = Iphi + lambda * Gphi;
 
     results[id] = result;
 }

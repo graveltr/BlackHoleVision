@@ -38,52 +38,6 @@
                                     <color key="baseBackgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                             </button>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="l1O-BF-wv8">
-                                <rect key="frame" x="20" y="180" width="339" height="202"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Spin:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G7z-Zo-1v8">
-                                        <rect key="frame" x="194" y="26" width="39" height="21"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="2" maximumValue="2" translatesAutoresizingMaskIntoConstraints="NO" id="nXP-kQ-NMM">
-                                        <rect key="frame" x="55" y="64" width="94" height="32"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <color key="backgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
-                                    </stepper>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="asdf" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rfq-G0-ZzP">
-                                        <rect key="frame" x="236" y="26" width="52" height="21"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BSa-Vz-Ezs">
-                                        <rect key="frame" x="98" y="26" width="61" height="21"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Dist:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vHc-WG-Xcy">
-                                        <rect key="frame" x="55" y="26" width="35" height="21"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <integer key="value" value="10"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
-                            </view>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="QYR-JU-smz">
                                 <rect key="frame" x="5" y="674" width="365" height="32"/>
                                 <color key="backgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
@@ -97,17 +51,25 @@
                                 <rect key="frame" x="140.66666666666666" y="611" width="94" height="32"/>
                                 <color key="backgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
                             </stepper>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="asdf" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rfq-G0-ZzP">
+                                <rect key="frame" x="171" y="582" width="33.333333333333343" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="DGt-gs-ky1" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="1Ab-Mc-mnV"/>
                             <constraint firstAttribute="bottomMargin" secondItem="DGt-gs-ky1" secondAttribute="bottom" constant="135" id="A5o-Sh-k5s"/>
+                            <constraint firstItem="rfq-G0-ZzP" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="NH2-5I-PYg"/>
                             <constraint firstItem="des-wE-Uhc" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="50" id="Qfg-eh-VMd"/>
                             <constraint firstItem="sWv-We-cV7" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="Qgd-BB-IV8"/>
                             <constraint firstItem="des-wE-Uhc" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="TBF-ep-1x5"/>
                             <constraint firstItem="VvH-uZ-wuu" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="YIe-bz-7e7"/>
                             <constraint firstItem="QYR-JU-smz" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="a8F-T5-ByE"/>
+                            <constraint firstItem="DGt-gs-ky1" firstAttribute="top" secondItem="rfq-G0-ZzP" secondAttribute="bottom" constant="8" id="dZR-pD-2OF"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="sWv-We-cV7" secondAttribute="bottom" constant="18" id="mrg-E8-TN3"/>
                             <constraint firstItem="sWv-We-cV7" firstAttribute="top" secondItem="QYR-JU-smz" secondAttribute="bottom" constant="24" id="oz5-h1-xlZ"/>
                         </constraints>
@@ -115,15 +77,10 @@
                     <connections>
                         <outlet property="aboutButton" destination="VvH-uZ-wuu" id="sEU-p6-irC"/>
                         <outlet property="controlsButton" destination="des-wE-Uhc" id="geG-aN-UiL"/>
-                        <outlet property="controlsSubView" destination="l1O-BF-wv8" id="kHE-8X-C9h"/>
-                        <outlet property="distanceReadoutLabel" destination="BSa-Vz-Ezs" id="eaZ-1c-YPc"/>
-                        <outlet property="distanceStepper" destination="nXP-kQ-NMM" id="qDp-Nn-qPK"/>
-                        <outlet property="distanceStepperLabel" destination="vHc-WG-Xcy" id="rFs-o7-v2g"/>
                         <outlet property="fovSegmentedControl" destination="sWv-We-cV7" id="4GY-rf-L2d"/>
                         <outlet property="spacetimeSegmentedControl" destination="QYR-JU-smz" id="cgH-VN-4rO"/>
                         <outlet property="spinReadoutLabel" destination="rfq-G0-ZzP" id="12w-on-gWf"/>
                         <outlet property="spinStepper" destination="DGt-gs-ky1" id="P7l-42-UCg"/>
-                        <outlet property="spinStepperLabel" destination="G7z-Zo-1v8" id="TQ2-38-A4x"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

@@ -711,6 +711,9 @@ float3 cartesianToSpherical(float3 cartesianCoords) {
     return float3(r, theta, phi);
 }
 
+// Obtain the spherical coordinates of vs in the rotated frame in which
+// vo's line of sight is the x axis and z axis is the original z axis
+// projected into the plane defined by line of sight. 
 float3 rotateSphericalCoordinate(float3 vsSpherical, float3 voSpherical) {
     float3 vsCartesian = sphericalToCartesian(vsSpherical);
     float3 voCartesian = sphericalToCartesian(voSpherical);

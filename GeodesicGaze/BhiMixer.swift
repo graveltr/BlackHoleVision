@@ -6,6 +6,8 @@
 //
 
 import MetalKit
+import Foundation
+import simd
 
 class BhiMixer {
     
@@ -47,8 +49,10 @@ class BhiMixer {
     var mode: Int32!
     
     var lutTexture: MTLTexture!
-    
-    var filterParameters = FilterParameters(spaceTimeMode: 0, sourceMode: 1, d: 0, a: 0, thetas: 0)
+    var mmaDataTexture: MTLTexture!
+    var mmaLutTexture: MTLTexture!
+
+    var filterParameters = FilterParameters(spaceTimeMode: 0, sourceMode: 1, d: 1000, a: 0, thetas: 0)
     var needsNewLutTexture = true
     
     var filterParametersBuffer: MTLBuffer
@@ -59,6 +63,8 @@ class BhiMixer {
     var totalElements: Int = 0
     var debugMatrixWidth: Int = 0
     var debugMatrixHeight: Int = 0
+    
+    var matrixFromMathematica: [Float]?
 
     init(device: MTLDevice) {
         self.device = device
@@ -72,7 +78,121 @@ class BhiMixer {
         
         CVMetalTextureCacheCreate(nil, nil, device, nil, &textureCache)
         
+        // loadTexture()
+        // copyDataToTexture()
+        createMMATexture()
+        loadBinary()
+        // verifyTexture(rowInterp: true)
         setupPipelines()
+    }
+    
+    private func createMMATexture() {
+        
+    }
+    
+    private func copyDataToTexture() {
+        guard let data = matrixFromMathematica else {
+            fatalError("no matrix")
+        }
+        
+        let matrixWidth = 2;
+        let matrixHeight = 2;
+        
+        let textureDescriptor = MTLTextureDescriptor()
+        textureDescriptor.pixelFormat = .rgba32Float
+        textureDescriptor.width = matrixWidth
+        textureDescriptor.height = matrixHeight
+        textureDescriptor.usage = [.shaderRead, .shaderWrite]
+        
+        mmaDataTexture = device.makeTexture(descriptor: textureDescriptor)
+        
+        let bytesPerPixel = 16
+        let bytesPerRow = matrixWidth * bytesPerPixel
+        mmaDataTexture.replace(region: MTLRegionMake2D(0, 0, matrixWidth, matrixHeight),
+                               mipmapLevel: 0,
+                               withBytes: data,
+                               bytesPerRow: bytesPerRow)
+    }
+    
+    private func loadImage() {
+        guard let fileURL = Bundle.main.url(forResource: "matrix", withExtension: "png") else {
+            fatalError("unable to locate file")
+        }
+        
+        let textureLoader = MTKTextureLoader(device: device)
+        let options: [MTKTextureLoader.Option: Any] = [.SRGB: true]
+        
+        do {
+            let texture = try textureLoader.newTexture(URL: fileURL, options: options)
+            
+            let pixelFormat = texture.pixelFormat
+            mmaLutTexture = texture
+        } catch {
+            fatalError("Error: \(error)")
+        }
+    }
+    
+    private func loadBinary() {
+        // TODO: make the texture once on init
+        // TODO: whenever the user requests a different spin, then read and copy the data
+        
+        guard let fileURL = Bundle.main.url(forResource: "dat", withExtension: nil) else {
+            fatalError("file not found")
+        }
+
+        guard let data = try? Data(contentsOf: fileURL) else {
+            fatalError("couldn't get data")
+        }
+        
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(
+            pixelFormat: .rgba16Uint,
+            width: 1080,
+            height: 1920,
+            mipmapped: false)
+        
+        guard let texture = device.makeTexture(descriptor: descriptor) else {
+            fatalError("couldn't create texture")
+        }
+        
+        let pointer = (data as NSData).bytes
+        
+        texture.replace(
+            region: MTLRegionMake2D(0, 0, 1080, 1920),
+            mipmapLevel: 0,
+            withBytes: pointer,
+            bytesPerRow: MemoryLayout<UInt16>.size * 4 * 1080
+        )
+        
+        mmaLutTexture = texture
+    }
+    
+    private func loadTexture() {
+        guard let fileURL = Bundle.main.url(forResource: "matrix", withExtension: "txt") else {
+            fatalError("file not found")
+        }
+        
+        let fileContents: String
+        do {
+            fileContents = try String(contentsOf: fileURL, encoding: .utf8)
+        } catch {
+            fatalError("failed to read file: \(error)")
+        }
+        
+        var data: [Float] = []
+        let rows = fileContents.components(separatedBy: .newlines).filter { !$0.isEmpty }
+        
+        for row in rows {
+            let elements = row.components(separatedBy: ", ")
+            for element in elements {
+                let components = element.components(separatedBy: " ").map { Float($0)! }
+                data.append(components[0])
+                data.append(components[1])
+                data.append(components[2])
+                data.append(components[3])
+            }
+        }
+        
+        matrixFromMathematica = data
     }
     
     private func setupPipelines() {
@@ -186,7 +306,13 @@ class BhiMixer {
             
             if filterParameters.spaceTimeMode == 2 && filterParameters.sourceMode == 0 {
                 // cpuPostProcess(rowInterp: fEqual(0.01, filterParameters.a))
-                cpuPostProcessStatic()
+                if filterParameters.a == 0.9 {
+                    logLUT()
+                }
+                    
+                // cpuPostProcessOther()
+                // cpuPostProcessStatic()
+                // findLayers()
             }
             
             needsNewLutTexture = false
@@ -248,6 +374,7 @@ class BhiMixer {
         renderEncoder.setFragmentTexture(backYTexture, index: 2)
         renderEncoder.setFragmentTexture(backUVTexture, index: 3)
         renderEncoder.setFragmentTexture(lutTexture, index: 4)
+        renderEncoder.setFragmentTexture(mmaLutTexture, index: 5)
         renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
         renderEncoder.endEncoding()
         
@@ -309,6 +436,30 @@ class BhiMixer {
         _ = matrixResult[0][0]
     }
     
+    private func verifyTexture(rowInterp: Bool) {
+        let textureWidth = mmaLutTexture.width
+        let textureHeight = mmaLutTexture.height
+        
+        let bytesPerPixel = 8
+        let bytesPerRow = textureWidth * bytesPerPixel
+        var data = [UInt16](repeating: 0, count: 4 * textureWidth * textureHeight)
+        
+        mmaLutTexture.getBytes(&data,
+                               bytesPerRow: bytesPerRow,
+                               from: MTLRegionMake2D(0, 0, textureWidth, textureHeight),
+                               mipmapLevel: 0)
+        
+        for row in 0..<textureHeight {
+            for col in 0..<textureWidth {
+                let idx = (row * textureWidth + col) * 4
+                let a = data[idx]
+                let b = data[idx + 1]
+                let c = data[idx + 2]
+                let d = data[idx + 3]
+            }
+        }
+    }
+
     private func cpuPostProcess(rowInterp: Bool) {
         let textureWidth = lutTexture.width
         let textureHeight = lutTexture.height
@@ -443,6 +594,262 @@ class BhiMixer {
                            bytesPerRow: bytesPerRow)
     }
     
+    private func cpuPostProcessOther() {
+        testSplineParameters()
+        
+        let textureWidth = lutTexture.width
+        let textureHeight = lutTexture.height
+        
+        let bytesPerPixel = 16
+        let bytesPerRow = textureWidth * bytesPerPixel
+        
+        var data = [Float](repeating: 0, count: textureHeight * textureWidth * 4)
+        
+        lutTexture.getBytes(&data,
+                            bytesPerRow: bytesPerRow,
+                            from: MTLRegionMake2D(0, 0, textureWidth, textureHeight),
+                            mipmapLevel: 0)
+        
+        let shadowWidth = 180
+        let startCol = textureWidth / 2 - shadowWidth / 2
+        let endCol = textureWidth / 2 + shadowWidth / 2
+        
+        let seekWidth = 40
+        let seekStartRow = textureHeight / 2 - seekWidth / 2
+        let seekEndRow = textureHeight / 2 + seekWidth / 2
+        
+        let combinedRange = Array(0..<startCol) + Array(endCol..<textureWidth)
+        
+        var col = 700
+        for row in 0..<textureHeight {
+            let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+            if fEqual(data[arrIndex + 2], 0.0) && fEqual(data[arrIndex + 3], 0.0) {
+                print("xy data before: \(row), \(data[arrIndex + 1])")
+            }
+        }
+
+        /*
+         * For each column (horizontal slice in image), loop through
+         * a set number of rows centered in the middle of the images
+         * and interpolate from one side to the other.
+         */
+        for col in combinedRange {
+            var errorCount = 0
+            var rowIdxOfFirstError = -1
+            var rowIdxOfLastError = -1
+            for row in seekStartRow..<seekEndRow {
+                let index = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                // If error status code
+                if !fEqual(data[index + 2], 0.0) || !fEqual(data[index + 3], 0.0) {
+                    if rowIdxOfFirstError == -1 {
+                        rowIdxOfFirstError = row
+                    }
+                    rowIdxOfLastError = row
+                    errorCount += 1
+                }
+            }
+            
+            if errorCount == 0 { continue }
+            print("col: \(col) error count: \(errorCount)")
+            
+            let buffer = 10
+            let startRow = (rowIdxOfFirstError - buffer)
+            let endRow = (rowIdxOfLastError + buffer)
+
+            let arrIdxOfOneAboveStartPixel = rowColToArrIdx(row: startRow - 1, col: col, width: textureWidth)
+            let arrIdxOfStartPixel = rowColToArrIdx(row: startRow, col: col, width: textureWidth)
+            let arrIdxOfEndPixel = rowColToArrIdx(row: endRow, col: col, width: textureWidth)
+            let arrIdxOfOneBelowEndPixel = rowColToArrIdx(row: endRow + 1, col: col, width: textureWidth)
+
+            let oneAboveStartPixelx = data[arrIdxOfOneAboveStartPixel]
+            let oneAboveStartPixely = data[arrIdxOfOneAboveStartPixel + 1]
+            
+            let startPixelx = data[arrIdxOfStartPixel]
+            let startPixely = data[arrIdxOfStartPixel + 1]
+            
+            let endPixelx = data[arrIdxOfEndPixel]
+            let endPixely = data[arrIdxOfEndPixel + 1]
+            
+            let oneBelowEndPixelx = data[arrIdxOfOneBelowEndPixel]
+            let oneBelowEndPixely = data[arrIdxOfOneBelowEndPixel + 1]
+
+            // We compute a four point spline interpolation in both channels
+            let xChannelKValues = computeFourPointSplineParameters(x0: Float(startRow - 1),     y0: oneAboveStartPixelx,
+                                                                   x1: Float(startRow),         y1: startPixelx,
+                                                                   x2: Float(endRow),           y2: endPixelx,
+                                                                   x3: Float(endRow + 1),       y3: oneBelowEndPixelx)
+            
+            let yChannelKValues = computeFourPointSplineParameters(x0: Float(startRow - 1),     y0: oneAboveStartPixely,
+                                                                   x1: Float(startRow),         y1: startPixely,
+                                                                   x2: Float(endRow),           y2: endPixely,
+                                                                   x3: Float(endRow + 1),       y3: oneBelowEndPixely)
+
+            // For passing to computeSplineValue.
+            let x1          = Float(startRow)
+            let x2          = Float(endRow)
+            
+            let y1xChannel  = startPixelx
+            let y2xChannel  = endPixelx
+            let k1xChannel  = xChannelKValues.1
+            let k2xChannel  = xChannelKValues.2
+
+            let y1yChannel  = startPixely
+            let y2yChannel  = endPixely
+            let k1yChannel  = yChannelKValues.1
+            let k2yChannel  = yChannelKValues.2
+            
+            // 1080 / 2
+            let middleRow = 540;
+            let middleRowArrIdx = rowColToArrIdx(row: middleRow, col: col, width: textureWidth)
+            let oneAboveMiddleRowArrIdx = rowColToArrIdx(row: middleRow - 1, col: col, width: textureWidth)
+            data[middleRowArrIdx + 2] = data[oneAboveMiddleRowArrIdx + 2]
+            data[middleRowArrIdx + 3] = data[oneAboveMiddleRowArrIdx + 3]
+
+            for row in startRow...endRow {
+                let prevArrIndex = rowColToArrIdx(row: row - 1, col: col, width: textureWidth)
+                let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                let interpx = computeSplineValue(x1: x1, x2: x2,
+                                                 y1: y1xChannel, y2: y2xChannel,
+                                                 k1: k1xChannel, k2: k2xChannel, Float(row))
+                
+                let interpy = computeSplineValue(x1: x1, x2: x2,
+                                                 y1: y1yChannel, y2: y2yChannel,
+                                                 k1: k1yChannel, k2: k2yChannel, Float(row))
+
+                data[arrIndex]      = interpx
+                data[arrIndex + 1]  = interpy
+            }
+        }
+        
+        col = 700
+        for row in 0..<textureHeight {
+            let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+            if fEqual(data[arrIndex + 2], 0.0) && fEqual(data[arrIndex + 3], 0.0) {
+                print("xy data after: \(row), \(data[arrIndex + 1])")
+            }
+        }
+        
+        /*
+        var redCol = 665
+        for row in 0..<textureHeight {
+            let arrIndex = rowColToArrIdx(row: row, col: redCol, width: textureWidth)
+            data[arrIndex + 2] = 10.0
+            data[arrIndex + 3] = 10.0
+        }
+        */
+        
+        let rowInterp = true
+        if rowInterp {
+            let shadowHeight = 450
+            let startRow = textureHeight / 2 - shadowHeight / 2
+            let endRow = textureHeight / 2 + shadowHeight / 2
+            
+            let seekWidth = 10
+            let startCol = textureWidth / 2 - seekWidth / 2
+            let endCol = textureWidth / 2 + seekWidth / 2
+            
+            let combinedRange = Array(0..<startRow) + Array(endRow..<textureHeight)
+            
+            for row in combinedRange {
+                var errorCount = 0
+                var colIdxOfFirstError = -1
+                var colIdxOfLastError = -1
+                for col in startCol..<endCol {
+                    let index = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                    if fEqual(data[index + 2], 1.0) && fEqual(data[index + 3], 0.0) {
+                        if colIdxOfFirstError == -1 {
+                            colIdxOfFirstError = col
+                        }
+                        colIdxOfLastError = col
+                        errorCount += 1
+                    }
+                }
+                
+                if errorCount == 0 { continue }
+                print("row: \(row) error count: \(errorCount)")
+                
+                let colIdxOfLeftPixel = (colIdxOfFirstError - 1)
+                let colIdxOfRightPixel = (colIdxOfLastError + 1)
+                let arrIdxOfLeftPixel = rowColToArrIdx(row: row, col: colIdxOfLeftPixel, width: textureWidth)
+                let arrIdxOfRightPixel = rowColToArrIdx(row: row, col: colIdxOfRightPixel, width: textureWidth)
+                
+                let widthInCols = colIdxOfRightPixel - colIdxOfLeftPixel + 1
+                
+                let leftPixelx = data[arrIdxOfLeftPixel]
+                let leftPixely = data[arrIdxOfLeftPixel + 1]
+                let rightPixelx = data[arrIdxOfRightPixel]
+                let rightPixely = data[arrIdxOfRightPixel + 1]
+                
+                for col in colIdxOfFirstError...colIdxOfLastError {
+                    let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                    
+                    let factor: Float = Float(col - colIdxOfLeftPixel) / Float(widthInCols)
+                    
+                    let interpx = mix(leftPixelx, rightPixelx, factor)
+                    let interpy = mix(leftPixely, rightPixely, factor)
+                    
+                    data[arrIndex]      = interpx
+                    data[arrIndex + 1]  = interpy
+                    data[arrIndex + 2]  = 0.0
+                    data[arrIndex + 3]  = 0.0
+                }
+            }
+        }
+
+        lutTexture.replace(region: MTLRegionMake2D(0, 0, textureWidth, textureHeight),
+                           mipmapLevel: 0,
+                           withBytes: data,
+                           bytesPerRow: bytesPerRow)
+    }
+    
+    private func logLUT() {
+        let textureWidth = lutTexture.width
+        let textureHeight = lutTexture.height
+        
+        let bytesPerPixel = 16
+        let bytesPerRow = textureWidth * bytesPerPixel
+        
+        var data = [Float](repeating: 0, count: textureHeight * textureWidth * 4)
+        
+        lutTexture.getBytes(&data,
+                            bytesPerRow: bytesPerRow,
+                            from: MTLRegionMake2D(0, 0, textureWidth, textureHeight),
+                            mipmapLevel: 0)
+        
+        let directoryPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let filePath = directoryPath.appendingPathComponent("lut-texture-statuses-asdf.txt")
+        
+        var writeOutput: String = ""
+        for col in 0..<textureWidth {
+            for row in 0..<textureHeight {
+                let arrIndex = rowColToArrIdx(row: row, col: col, width: textureWidth)
+                
+                let printCode: Int;
+                if (fEqual(data[arrIndex + 2], 0.0) && fEqual(data[arrIndex + 3], 0.0)) {
+                    printCode = 0;
+                } else if (fEqual(data[arrIndex + 2], 0.0) && fEqual(data[arrIndex + 3], 1.0)) {
+                    printCode = 1;
+                } else {
+                    printCode = 2;
+                }
+                
+                if (row == textureHeight - 1) {
+                    writeOutput += "\(data[arrIndex]) \(data[arrIndex + 1]) \(printCode)"
+                } else {
+                    writeOutput += "\(data[arrIndex]) \(data[arrIndex + 1]) \(printCode),"
+                }
+            }
+            writeOutput += "\n"
+        }
+        
+        do {
+            try writeOutput.write(to: filePath, atomically: true, encoding: .utf8)
+            print("wrote to log file: \(filePath.path)")
+        } catch {
+            print("Failed to write to log file: \(error)")
+        }
+    }
+
     private func cpuPostProcessStatic() {
         testSplineParameters()
         
@@ -463,7 +870,7 @@ class BhiMixer {
         let startCol = textureWidth / 2 - shadowWidth / 2
         let endCol = textureWidth / 2 + shadowWidth / 2
         
-        let seekWidth = 140
+        let seekWidth = 50
         let startRow = textureHeight / 2 - seekWidth / 2
         let endRow = textureHeight / 2 + seekWidth / 2
         

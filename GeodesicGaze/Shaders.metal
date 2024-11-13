@@ -383,6 +383,15 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
     // This is normalizing to texture coordinate between 0 and 1
     float2 originalCoord = float2(gid) / float2(lut.get_width(), lut.get_height());
     
+    // This is the texture coordinate that places us on the beta axis
+    if (fEqual(0.5, originalCoord.y)) {
+        // This is spacing between the discretized values of the texture coordinate
+        float minSpacing = 1.0 / lut.get_height();
+    
+        // Increment by 1/2 this min spacing to maintain monotonicity
+        originalCoord.y = originalCoord.y + minSpacing;
+    }
+    
     LenseTextureCoordinateResult result;
     if (uniforms.spaceTimeMode == 0) {
         result = flatspaceLenseTextureCoordinate(originalCoord, uniforms.sourceMode);
@@ -478,6 +487,7 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
                                           texture2d<float, access::sample> backYTexture [[texture(2)]],
                                           texture2d<float, access::sample> backUVTexture [[texture(3)]],
                                           texture2d<float, access::sample> lutTexture [[texture(4)]],
+                                          texture2d<uint, access::sample> mmaLutTexture [[texture(5)]],
                                           constant Uniforms &uniforms [[buffer(0)]]) {
     constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::linear);
     
@@ -486,7 +496,12 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         return float4(1,0,0,1);
     }
     */
-    
+    /*
+    float4 testSample = mmaDataTexture.sample(s, float2(0.5, 0.0));
+    if (fEqual(testSample.x, 5.0) && fEqual(testSample.y, 6.0) && fEqual(testSample.z, 7.0) && fEqual(testSample.w, 8.0)) {
+        return float4(1.0, 0.0, 0.0, 1.0);
+    }
+    */
     
     float aRatio = 0.9;
     float pipHeight = 0.22;
@@ -510,8 +525,20 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         float3 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, frontPipCoord);
         return float4(rgb, 1.0);
     }
+    
+    // return mmaLutTexture.sample(s, float2(in.texCoord.y, in.texCoord.x));
 
-    float4 lutSample = lutTexture.sample(s, in.texCoord);
+    // float4 lutSample = lutTexture.sample(s, in.texCoord);
+    uint4 lutSampleUint = mmaLutTexture.sample(s, float2(in.texCoord.y, in.texCoord.x));
+    
+    /*
+    if (lutSampleUint.w == 65535) {
+        return float4(1,0,0,1);
+    }
+    */
+        
+        
+    float4 lutSample = float4(lutSampleUint) / 65535.0;
     
     float2 transformedTexCoord = lutSample.xy;
     float2 statusCode = lutSample.zw;
@@ -530,7 +557,7 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 0.0)) {
             return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 1.0)) {
-            return float4(0.0, 0.0, 0.0, 1.0);
+            return float4(0.0, 0.0, 1.0, 1.0);
         } else if (fEqual(statusCode[0], 0.5) && fEqual(statusCode[1], 0.5)) {
             return float4(0.0, 0.0, 0.0, 1.0);
         } else {
