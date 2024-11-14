@@ -3,6 +3,7 @@
     <device id="retina5_9" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -31,13 +32,6 @@
                                     <color key="baseBackgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VvH-uZ-wuu">
-                                <rect key="frame" x="152.66666666666666" y="48" width="70" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="About">
-                                    <color key="baseBackgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
-                                </buttonConfiguration>
-                            </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="QYR-JU-smz">
                                 <rect key="frame" x="5" y="674" width="365" height="32"/>
                                 <color key="backgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
@@ -47,7 +41,7 @@
                                     <segment title="Kerr black hole"/>
                                 </segments>
                             </segmentedControl>
-                            <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" maximumValue="4" translatesAutoresizingMaskIntoConstraints="NO" id="DGt-gs-ky1">
+                            <stepper opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" maximumValue="3" translatesAutoresizingMaskIntoConstraints="NO" id="DGt-gs-ky1">
                                 <rect key="frame" x="140.66666666666666" y="611" width="94" height="32"/>
                                 <color key="backgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
                             </stepper>
@@ -57,17 +51,26 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EXP-M8-Mff">
+                                <rect key="frame" x="159.66666666666666" y="151" width="55.666666666666657" height="35"/>
+                                <color key="tintColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain">
+                                    <imageReference key="image" image="camera.rotate" catalog="system" symbolScale="large"/>
+                                </buttonConfiguration>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="DGt-gs-ky1" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="1Ab-Mc-mnV"/>
+                            <constraint firstItem="EXP-M8-Mff" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="1iJ-s8-Qiq"/>
                             <constraint firstAttribute="bottomMargin" secondItem="DGt-gs-ky1" secondAttribute="bottom" constant="135" id="A5o-Sh-k5s"/>
                             <constraint firstItem="rfq-G0-ZzP" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="NH2-5I-PYg"/>
+                            <constraint firstItem="EXP-M8-Mff" firstAttribute="top" secondItem="des-wE-Uhc" secondAttribute="bottom" constant="16" id="OTd-dO-cUS"/>
                             <constraint firstItem="des-wE-Uhc" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="50" id="Qfg-eh-VMd"/>
                             <constraint firstItem="sWv-We-cV7" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="Qgd-BB-IV8"/>
                             <constraint firstItem="des-wE-Uhc" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="TBF-ep-1x5"/>
-                            <constraint firstItem="VvH-uZ-wuu" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="YIe-bz-7e7"/>
                             <constraint firstItem="QYR-JU-smz" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="a8F-T5-ByE"/>
                             <constraint firstItem="DGt-gs-ky1" firstAttribute="top" secondItem="rfq-G0-ZzP" secondAttribute="bottom" constant="8" id="dZR-pD-2OF"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="sWv-We-cV7" secondAttribute="bottom" constant="18" id="mrg-E8-TN3"/>
@@ -75,7 +78,7 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="aboutButton" destination="VvH-uZ-wuu" id="sEU-p6-irC"/>
+                        <outlet property="cameraFlipButton" destination="EXP-M8-Mff" id="cle-Ci-OJ4"/>
                         <outlet property="controlsButton" destination="des-wE-Uhc" id="geG-aN-UiL"/>
                         <outlet property="fovSegmentedControl" destination="sWv-We-cV7" id="4GY-rf-L2d"/>
                         <outlet property="spacetimeSegmentedControl" destination="QYR-JU-smz" id="cgH-VN-4rO"/>
@@ -89,6 +92,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="camera.rotate" catalog="system" width="128" height="93"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

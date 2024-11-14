@@ -19,7 +19,7 @@ struct MultiCamView: UIViewControllerRepresentable {
         
         var multiCamViewController: MultiCamViewController?
         
-        let spinValues: [Float] = [0.01, 0.2, 0.5, 0.9, 0.99]
+        let spinValues: [Float] = [0.5, 0.9, 0.99, 0.999]
         let distanceValues: [Float] = [10, 100, 1000]
 
         init(parent: MultiCamView, mtkView: MTKView, mixer: BhiMixer, multiCamCapture: MultiCamCapture) {
@@ -48,12 +48,13 @@ struct MultiCamView: UIViewControllerRepresentable {
                       in: view)
         }
         
-        @objc func handleAboutButton(_ sender: UIButton) { 
-            // TODO: fill this in
-        }
         @objc func handleControlsButton(_ sender: UIButton) {
             multiCamViewController!.fovSegmentedControl.isHidden = !(multiCamViewController!.fovSegmentedControl.isHidden)
             multiCamViewController!.spacetimeSegmentedControl.isHidden = !(multiCamViewController!.spacetimeSegmentedControl.isHidden)
+        }
+        
+        @objc func handleCameraFlipButton(_ sender: UIButton) {
+            mixer.isBlackHoleInFront = (mixer.isBlackHoleInFront == 1) ? 0 : 1
         }
 
         @objc func spinStepperValueChanged(_ sender: UIStepper) { 
@@ -179,13 +180,13 @@ struct MultiCamView: UIViewControllerRepresentable {
         
         viewController.spinReadoutLabel.isHidden = true
 
-        viewController.aboutButton.addTarget(context.coordinator,
-                                             action: #selector(context.coordinator.handleAboutButton(_:)),
-                                             for: .touchUpInside)
         viewController.controlsButton.addTarget(context.coordinator,
                                                 action: #selector(context.coordinator.handleControlsButton(_:)),
-                                             for: .touchUpInside)
-
+                                                for: .touchUpInside)
+        
+        viewController.cameraFlipButton.addTarget(context.coordinator,
+                                                  action: #selector(context.coordinator.handleCameraFlipButton(_:)),
+                                                  for: .touchUpInside)
         
         viewController.spinStepper.tintColor = UIColor.red
         viewController.spinStepper.addTarget(context.coordinator,
@@ -199,7 +200,6 @@ struct MultiCamView: UIViewControllerRepresentable {
                                                      action: #selector(context.coordinator.fovModeChanged(_:)),
                                                      for: .valueChanged)
 
-        viewController.aboutButton.isHidden = true
         viewController.spinStepper.isHidden = true
         viewController.fovSegmentedControl.isEnabled = false
 
@@ -216,8 +216,8 @@ class MultiCamViewController: UIViewController {
     
     @IBOutlet weak var spinReadoutLabel: UILabel!
     
-    @IBOutlet weak var aboutButton: UIButton!
     @IBOutlet weak var controlsButton: UIButton!
+    @IBOutlet weak var cameraFlipButton: UIButton!
 
     @IBOutlet weak var spacetimeSegmentedControl: UISegmentedControl!
     @IBOutlet weak var fovSegmentedControl: UISegmentedControl!

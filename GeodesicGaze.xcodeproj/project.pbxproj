@@ -11,11 +11,8 @@
 		6911EB4A2CAC6651002B3656 /* Physics.metal in Sources */ = {isa = PBXBuildFile; fileRef = 6967E4732C862EC700E5C57D /* Physics.metal */; };
 		6911EB4B2CAC6658002B3656 /* Utilities.metal in Sources */ = {isa = PBXBuildFile; fileRef = 6967E46F2C861FF800E5C57D /* Utilities.metal */; };
 		6911EB4C2CAC6664002B3656 /* ComputeKernels.metal in Sources */ = {isa = PBXBuildFile; fileRef = 69F7B4492C8547B600057475 /* ComputeKernels.metal */; };
-		6952C3FA2CE4850A0073B3AF /* dat in Resources */ = {isa = PBXBuildFile; fileRef = 6952C3F92CE4850A0073B3AF /* dat */; };
-		6952C3FB2CE4850A0073B3AF /* dat in Resources */ = {isa = PBXBuildFile; fileRef = 6952C3F92CE4850A0073B3AF /* dat */; };
 		6967E4702C861FF800E5C57D /* Utilities.metal in Sources */ = {isa = PBXBuildFile; fileRef = 6967E46F2C861FF800E5C57D /* Utilities.metal */; };
 		6967E4742C862EC700E5C57D /* Physics.metal in Sources */ = {isa = PBXBuildFile; fileRef = 6967E4732C862EC700E5C57D /* Physics.metal */; };
-		69729F022CCEFE6800AF8E05 /* IMG_3923.PNG in Resources */ = {isa = PBXBuildFile; fileRef = 69729F012CCEFE6800AF8E05 /* IMG_3923.PNG */; };
 		6986092C2C74DB2800CD3B0F /* GeodesicGazeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6986092B2C74DB2800CD3B0F /* GeodesicGazeApp.swift */; };
 		6986092E2C74DB2800CD3B0F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6986092D2C74DB2800CD3B0F /* ContentView.swift */; };
 		698609302C74DB2A00CD3B0F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6986092F2C74DB2A00CD3B0F /* Assets.xcassets */; };
@@ -34,10 +31,14 @@
 		698F80292C9B75B8001301C1 /* ComplexMath.metal in Sources */ = {isa = PBXBuildFile; fileRef = 698F80282C9B75B8001301C1 /* ComplexMath.metal */; };
 		698F802A2C9B75B8001301C1 /* ComplexMath.metal in Sources */ = {isa = PBXBuildFile; fileRef = 698F80282C9B75B8001301C1 /* ComplexMath.metal */; };
 		69BF16822C74DE100008D537 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 69BF16812C74DE100008D537 /* README.md */; };
-		69CBD5372CE405AF00791710 /* matrix.txt in Resources */ = {isa = PBXBuildFile; fileRef = 69CBD5362CE405AF00791710 /* matrix.txt */; };
-		69CBD5382CE405AF00791710 /* matrix.txt in Resources */ = {isa = PBXBuildFile; fileRef = 69CBD5362CE405AF00791710 /* matrix.txt */; };
-		69CBD53A2CE4586D00791710 /* matrix.png in Resources */ = {isa = PBXBuildFile; fileRef = 69CBD5392CE4586D00791710 /* matrix.png */; };
-		69CBD53B2CE4586D00791710 /* matrix.png in Resources */ = {isa = PBXBuildFile; fileRef = 69CBD5392CE4586D00791710 /* matrix.png */; };
+		69E0CDE52CE65F4D000E3BBF /* lut-texture-a-0-999 in Resources */ = {isa = PBXBuildFile; fileRef = 69E0CDE42CE65F4D000E3BBF /* lut-texture-a-0-999 */; };
+		69E0CDE62CE65F4D000E3BBF /* lut-texture-a-0-9 in Resources */ = {isa = PBXBuildFile; fileRef = 69E0CDE22CE65F4D000E3BBF /* lut-texture-a-0-9 */; };
+		69E0CDE72CE65F4D000E3BBF /* lut-texture-a-0-99 in Resources */ = {isa = PBXBuildFile; fileRef = 69E0CDE32CE65F4D000E3BBF /* lut-texture-a-0-99 */; };
+		69E0CDE82CE65F4D000E3BBF /* lut-texture-a-0-5 in Resources */ = {isa = PBXBuildFile; fileRef = 69E0CDE12CE65F4D000E3BBF /* lut-texture-a-0-5 */; };
+		69E0CDE92CE65F4D000E3BBF /* lut-texture-a-0-999 in Resources */ = {isa = PBXBuildFile; fileRef = 69E0CDE42CE65F4D000E3BBF /* lut-texture-a-0-999 */; };
+		69E0CDEA2CE65F4D000E3BBF /* lut-texture-a-0-9 in Resources */ = {isa = PBXBuildFile; fileRef = 69E0CDE22CE65F4D000E3BBF /* lut-texture-a-0-9 */; };
+		69E0CDEB2CE65F4D000E3BBF /* lut-texture-a-0-99 in Resources */ = {isa = PBXBuildFile; fileRef = 69E0CDE32CE65F4D000E3BBF /* lut-texture-a-0-99 */; };
+		69E0CDEC2CE65F4D000E3BBF /* lut-texture-a-0-5 in Resources */ = {isa = PBXBuildFile; fileRef = 69E0CDE12CE65F4D000E3BBF /* lut-texture-a-0-5 */; };
 		69F4DFDA2CC6D9F300C16C36 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 69F4DFD92CC6D9F300C16C36 /* Main.storyboard */; };
 		69F7B4432C85419B00057475 /* GeodesicGazeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F7B4422C85419B00057475 /* GeodesicGazeTests.swift */; };
 		69F7B44A2C8547B600057475 /* ComputeKernels.metal in Sources */ = {isa = PBXBuildFile; fileRef = 69F7B4492C8547B600057475 /* ComputeKernels.metal */; };
@@ -56,12 +57,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		6952C3F92CE4850A0073B3AF /* dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = dat; sourceTree = "<group>"; };
 		6967E46E2C861FC200E5C57D /* Utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Utilities.h; sourceTree = "<group>"; };
 		6967E46F2C861FF800E5C57D /* Utilities.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Utilities.metal; sourceTree = "<group>"; };
 		6967E4722C862EB300E5C57D /* Physics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Physics.h; sourceTree = "<group>"; };
 		6967E4732C862EC700E5C57D /* Physics.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Physics.metal; sourceTree = "<group>"; };
-		69729F012CCEFE6800AF8E05 /* IMG_3923.PNG */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = IMG_3923.PNG; sourceTree = "<group>"; };
 		69729F032CCF1D4300AF8E05 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		698609282C74DB2800CD3B0F /* GeodesicGaze.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeodesicGaze.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6986092B2C74DB2800CD3B0F /* GeodesicGazeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeodesicGazeApp.swift; sourceTree = "<group>"; };
@@ -78,8 +77,10 @@
 		698F80222C9B28EC001301C1 /* expected_ellipticp_results.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = expected_ellipticp_results.txt; sourceTree = "<group>"; };
 		698F80282C9B75B8001301C1 /* ComplexMath.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ComplexMath.metal; sourceTree = "<group>"; };
 		69BF16812C74DE100008D537 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		69CBD5362CE405AF00791710 /* matrix.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = matrix.txt; sourceTree = "<group>"; };
-		69CBD5392CE4586D00791710 /* matrix.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = matrix.png; sourceTree = "<group>"; };
+		69E0CDE12CE65F4D000E3BBF /* lut-texture-a-0-5 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "lut-texture-a-0-5"; sourceTree = "<group>"; };
+		69E0CDE22CE65F4D000E3BBF /* lut-texture-a-0-9 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "lut-texture-a-0-9"; sourceTree = "<group>"; };
+		69E0CDE32CE65F4D000E3BBF /* lut-texture-a-0-99 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "lut-texture-a-0-99"; sourceTree = "<group>"; };
+		69E0CDE42CE65F4D000E3BBF /* lut-texture-a-0-999 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "lut-texture-a-0-999"; sourceTree = "<group>"; };
 		69F078EC2C9C633D000D7DE7 /* ComplexMath.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ComplexMath.h; sourceTree = "<group>"; };
 		69F4DFD92CC6D9F300C16C36 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		69F7B4402C85419B00057475 /* GeodesicGazeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GeodesicGazeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -129,11 +130,11 @@
 		6986092A2C74DB2800CD3B0F /* GeodesicGaze */ = {
 			isa = PBXGroup;
 			children = (
-				6952C3F92CE4850A0073B3AF /* dat */,
-				69CBD5392CE4586D00791710 /* matrix.png */,
-				69CBD5362CE405AF00791710 /* matrix.txt */,
+				69E0CDE12CE65F4D000E3BBF /* lut-texture-a-0-5 */,
+				69E0CDE22CE65F4D000E3BBF /* lut-texture-a-0-9 */,
+				69E0CDE32CE65F4D000E3BBF /* lut-texture-a-0-99 */,
+				69E0CDE42CE65F4D000E3BBF /* lut-texture-a-0-999 */,
 				69729F032CCF1D4300AF8E05 /* Info.plist */,
-				69729F012CCEFE6800AF8E05 /* IMG_3923.PNG */,
 				698F80222C9B28EC001301C1 /* expected_ellipticp_results.txt */,
 				698F801D2C9B25A8001301C1 /* expected_elliptice_results.txt */,
 				698F801C2C9B25A8001301C1 /* expected_ellipticf_results.txt */,
@@ -149,8 +150,8 @@
 				69F7B4492C8547B600057475 /* ComputeKernels.metal */,
 				6986093B2C74DBB200CD3B0F /* Shaders.metal */,
 				698609392C74DBB200CD3B0F /* BhiMixer.swift */,
-				6986093A2C74DBB200CD3B0F /* MultiCamCapture.swift */,
 				6986093C2C74DBB200CD3B0F /* MultiCamView.swift */,
+				6986093A2C74DBB200CD3B0F /* MultiCamCapture.swift */,
 				6986092B2C74DB2800CD3B0F /* GeodesicGazeApp.swift */,
 				6986092D2C74DB2800CD3B0F /* ContentView.swift */,
 				6986092F2C74DB2A00CD3B0F /* Assets.xcassets */,
@@ -257,14 +258,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6952C3FA2CE4850A0073B3AF /* dat in Resources */,
+				69E0CDE52CE65F4D000E3BBF /* lut-texture-a-0-999 in Resources */,
+				69E0CDE62CE65F4D000E3BBF /* lut-texture-a-0-9 in Resources */,
+				69E0CDE72CE65F4D000E3BBF /* lut-texture-a-0-99 in Resources */,
+				69E0CDE82CE65F4D000E3BBF /* lut-texture-a-0-5 in Resources */,
 				69BF16822C74DE100008D537 /* README.md in Resources */,
 				69F7B44C2C85576000057475 /* expected_results.txt in Resources */,
 				698F801E2C9B25A8001301C1 /* expected_ellipticf_results.txt in Resources */,
-				69729F022CCEFE6800AF8E05 /* IMG_3923.PNG in Resources */,
-				69CBD53B2CE4586D00791710 /* matrix.png in Resources */,
 				69F4DFDA2CC6D9F300C16C36 /* Main.storyboard in Resources */,
-				69CBD5372CE405AF00791710 /* matrix.txt in Resources */,
 				698609332C74DB2A00CD3B0F /* Preview Assets.xcassets in Resources */,
 				698609302C74DB2A00CD3B0F /* Assets.xcassets in Resources */,
 				698F80232C9B28EC001301C1 /* expected_ellipticp_results.txt in Resources */,
@@ -276,12 +277,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				69CBD5382CE405AF00791710 /* matrix.txt in Resources */,
-				6952C3FB2CE4850A0073B3AF /* dat in Resources */,
 				698F80242C9B28EC001301C1 /* expected_ellipticp_results.txt in Resources */,
-				69CBD53A2CE4586D00791710 /* matrix.png in Resources */,
 				698F801F2C9B25A8001301C1 /* expected_ellipticf_results.txt in Resources */,
 				69F7B44D2C85576000057475 /* expected_results.txt in Resources */,
+				69E0CDE92CE65F4D000E3BBF /* lut-texture-a-0-999 in Resources */,
+				69E0CDEA2CE65F4D000E3BBF /* lut-texture-a-0-9 in Resources */,
+				69E0CDEB2CE65F4D000E3BBF /* lut-texture-a-0-99 in Resources */,
+				69E0CDEC2CE65F4D000E3BBF /* lut-texture-a-0-5 in Resources */,
 				698F80212C9B25A8001301C1 /* expected_elliptice_results.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

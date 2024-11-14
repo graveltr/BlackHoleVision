@@ -35,7 +35,6 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     override init() {
         super.init()
         setupMultiCamSession()
-        loadStaticImages()
     }
     
     private func setupMultiCamSession() {
@@ -104,17 +103,6 @@ class MultiCamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             if multiCamSession.canAddConnection(backPreviewConnection) {
                 multiCamSession.addConnection(backPreviewConnection)
             }
-        }
-    }
-    
-    private func loadStaticImages() {
-        // Load static images for simulation
-        if let frontImage = UIImage(named: "IMG_3923.PNG"),
-           let backImage = UIImage(named: "IMG_3923.PNG") {
-            staticFrontImageBuffer = pixelBufferFromImage(image: frontImage)
-            staticBackImageBuffer = pixelBufferFromImage(image: backImage)
-        } else {
-            fatalError("Unable to load static images")
         }
     }
     

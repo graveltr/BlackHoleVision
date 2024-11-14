@@ -40,6 +40,8 @@ struct Uniforms {
     int backTextureWidth;
     int backTextureHeight;
     int mode;
+    int spacetimeMode;
+    int isBlackHoleInFront;
 };
 
 struct PreComputeUniforms {
@@ -374,7 +376,6 @@ float2 getPipCoord(float2 pipOrigin, float pipHeight, float pipWidth, float2 coo
  * to the fragment shader on subsequent render passes (per frame updates)
  * and sampled.
  */
-// TODO: fix the debug matrix writes ... seem to be going out of bounds?
 kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
                           constant FilterParameters &uniforms   [[buffer(0)]],
                           device float3* matrix                 [[buffer(1)]],
@@ -403,33 +404,23 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
         assert(false);
     }
 
-    uint linearIndex = gid.y * width + gid.x;
-    // LenseTextureCoordinateResult result;
-    // result.status = SUCCESS_BACK_TEXTURE;
-    // result.coord = originalCoord;
-
     // Need to pass the status code within the look-up table. We do so in the
     // zw components with binary strings (00, 01, 10, 11)
     if (uniforms.sourceMode == FULL_FOV_MODE) {
         if (result.status == SUCCESS_BACK_TEXTURE) {
             lut.write(float4(result.coord, 0.0, 0.0), gid); // 00
-            //matrix[linearIndex] = float3(originalCoord, 0);
         }
         if (result.status == SUCCESS_FRONT_TEXTURE) {
             lut.write(float4(result.coord, 0.0, 1.0), gid); // 01
-            //matrix[linearIndex] = float3(originalCoord, 0);
         }
         if (result.status == ERROR) {
             lut.write(float4(0.0, 0.0, 1.0, 0.0), gid); // 10
-            //matrix[linearIndex] = float3(originalCoord, -1);
         }
         if (result.status == EMITTED_FROM_BLACK_HOLE) {
             lut.write(float4(0.0, 0.0, 1.0, 1.0), gid); // 11
-            //matrix[linearIndex] = float3(originalCoord, -1);
         }
         if (result.status == VORTICAL) {
             lut.write(float4(0.0, 0.0, 0.5, 0.5), gid);
-            //matrix[linearIndex] = float3(originalCoord, -1);
         }
     }
     
@@ -452,34 +443,6 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
     }
 }
 
-kernel void postProcess(texture2d<float, access::read_write> lut    [[texture(0)]],
-                        constant uint &sliceWidth                   [[buffer(0)]],
-                        constant uint &textureWidth                 [[buffer(1)]],
-                        uint2 gid [[thread_position_in_grid]]) {
-    if (gid.y >= textureWidth / 2 - sliceWidth / 2 && gid.y < textureWidth / 2 + sliceWidth / 2) {
-        float4 leftPixel    = lut.read(uint2(gid.x, gid.y - sliceWidth / 2));
-        float4 rightPixel   = lut.read(uint2(gid.x, gid.y + sliceWidth / 2));
-        
-        float factor = float(gid.y - (textureWidth / 2 - sliceWidth / 2)) / sliceWidth;
-        float2 interpolatedTexCoords = mix(leftPixel.xy, rightPixel.xy, factor);
-        
-        // We interpolate the texture coordinates, but just copy down the
-        // status code
-        float4 finalPixel = float4(interpolatedTexCoords, leftPixel.zw);
-        
-        lut.write(finalPixel, gid);
-    }
-}
-
-kernel void precomputeLutTest(texture2d<float, access::write> lut   [[texture(0)]],
-                              uint2 gid [[thread_position_in_grid]]) {
-    // This is normalizing to texture coordinate between 0 and 1
-    float2 originalCoord = float2(gid) / float2(lut.get_width(), lut.get_height());
-    
-    LenseTextureCoordinateResult result = kerrLenseTextureCoordinate(originalCoord, 0, 1000, 0.5);
-    lut.write(float4(result.coord, 0.0, 0.0), gid);
-    //lut.write(float4(0.0, 0.0, 0.0, 0.0), gid);
-}
 
 fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
                                           texture2d<float, access::sample> frontYTexture [[texture(0)]],
@@ -490,18 +453,6 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
                                           texture2d<uint, access::sample> mmaLutTexture [[texture(5)]],
                                           constant Uniforms &uniforms [[buffer(0)]]) {
     constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::linear);
-    
-    /*
-    if (0.28 < in.texCoord.x && in.texCoord.x < 0.29 && 0.50 < in.texCoord.y && in.texCoord.y < 0.52) {
-        return float4(1,0,0,1);
-    }
-    */
-    /*
-    float4 testSample = mmaDataTexture.sample(s, float2(0.5, 0.0));
-    if (fEqual(testSample.x, 5.0) && fEqual(testSample.y, 6.0) && fEqual(testSample.z, 7.0) && fEqual(testSample.w, 8.0)) {
-        return float4(1.0, 0.0, 0.0, 1.0);
-    }
-    */
     
     float aRatio = 0.9;
     float pipHeight = 0.22;
@@ -526,22 +477,18 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         return float4(rgb, 1.0);
     }
     
-    // return mmaLutTexture.sample(s, float2(in.texCoord.y, in.texCoord.x));
-
-    // float4 lutSample = lutTexture.sample(s, in.texCoord);
-    uint4 lutSampleUint = mmaLutTexture.sample(s, float2(in.texCoord.y, in.texCoord.x));
-    
-    /*
-    if (lutSampleUint.w == 65535) {
-        return float4(1,0,0,1);
+    float4 lutSample;
+    if (uniforms.spacetimeMode == 2) {
+        uint4 lutSampleUint = mmaLutTexture.sample(s, float2(in.texCoord.y, in.texCoord.x));
+        lutSample = float4(lutSampleUint) / 65535.0;
+    } else {
+        lutSample = lutTexture.sample(s, in.texCoord);
     }
-    */
-        
-        
-    float4 lutSample = float4(lutSampleUint) / 65535.0;
     
     float2 transformedTexCoord = lutSample.xy;
     float2 statusCode = lutSample.zw;
+    
+    bool isBlackHoleInFront = uniforms.isBlackHoleInFront;
     
     if (fEqual(statusCode[0], 10.0) && fEqual(statusCode[1], 10.0)) {
         return float4(1,0,0,1);
@@ -549,15 +496,25 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
     
     if (uniforms.mode == FULL_FOV_MODE) {
         if (fEqual(statusCode[0], 0.0) && fEqual(statusCode[1], 0.0)) {
-            float3 rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
+            float3 rgb;
+            if (isBlackHoleInFront) {
+                rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
+            } else {
+                rgb = sampleYUVTexture(frontYTexture, frontUVTexture, transformedTexCoord);
+            }
             return float4(rgb, 1.0);
         } else if (fEqual(statusCode[0], 0.0) && fEqual(statusCode[1], 1.0)) {
-            float3 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, transformedTexCoord);
+            float3 rgb;
+            if (isBlackHoleInFront) {
+                rgb = sampleYUVTexture(frontYTexture, frontUVTexture, transformedTexCoord);
+            } else {
+                rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
+            }
             return float4(rgb, 1.0);
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 0.0)) {
             return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 1.0)) {
-            return float4(0.0, 0.0, 1.0, 1.0);
+            return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 0.5) && fEqual(statusCode[1], 0.5)) {
             return float4(0.0, 0.0, 0.0, 1.0);
         } else {
@@ -567,7 +524,12 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
     
     if (uniforms.mode == ACTUAL_FOV_MODE) {
         if (fEqual(statusCode[0], 0.0) && fEqual(statusCode[1], 0.0)) {
-            float3 rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
+            float3 rgb;
+            if (isBlackHoleInFront) {
+                rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
+            } else {
+                rgb = sampleYUVTexture(frontYTexture, frontUVTexture, transformedTexCoord);
+            }
             return float4(rgb, 1.0);
         } else if (fEqual(statusCode[0], 0.0) && fEqual(statusCode[1], 1.0)) {
             return float4(0.0, 0.0, 0.0, 1.0);
@@ -584,3 +546,27 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
     
     return float4(1.0, 0.0, 1.0, 1.0);
 }
+
+
+/*
+ 
+ kernel void postProcess(texture2d<float, access::read_write> lut    [[texture(0)]],
+                         constant uint &sliceWidth                   [[buffer(0)]],
+                         constant uint &textureWidth                 [[buffer(1)]],
+                         uint2 gid [[thread_position_in_grid]]) {
+     if (gid.y >= textureWidth / 2 - sliceWidth / 2 && gid.y < textureWidth / 2 + sliceWidth / 2) {
+         float4 leftPixel    = lut.read(uint2(gid.x, gid.y - sliceWidth / 2));
+         float4 rightPixel   = lut.read(uint2(gid.x, gid.y + sliceWidth / 2));
+         
+         float factor = float(gid.y - (textureWidth / 2 - sliceWidth / 2)) / sliceWidth;
+         float2 interpolatedTexCoords = mix(leftPixel.xy, rightPixel.xy, factor);
+         
+         // We interpolate the texture coordinates, but just copy down the
+         // status code
+         float4 finalPixel = float4(interpolatedTexCoords, leftPixel.zw);
+         
+         lut.write(finalPixel, gid);
+     }
+ }
+
+ */
