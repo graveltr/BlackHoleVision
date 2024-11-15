@@ -19,6 +19,8 @@ class BhiMixer {
         var mode: Int32
         var spacetimeMode: Int32
         var isBlackHoleInFront: Int32
+        var vcWidthToViewWidth: Float
+        var vcEdgeInViewTextureCoords: Float
     }
     
     struct PreComputeUniforms {
@@ -68,6 +70,9 @@ class BhiMixer {
     var matrixFromMathematica: [Float]?
     
     var isBlackHoleInFront: Int32 = 1
+    
+    var vcWidthToViewWidth: Float?
+    var vcEdgeInViewTextureCoords: Float?
 
     init(device: MTLDevice) {
         self.device = device
@@ -340,7 +345,9 @@ class BhiMixer {
               let backYTexture = backYTexture,
               let backUVTexture = backUVTexture,
               let backTextureWidth = backTextureWidth,
-              let backTextureHeight = backTextureHeight else {
+              let backTextureHeight = backTextureHeight,
+              let vcEdgeInViewTextureCoords = vcEdgeInViewTextureCoords,
+              let vcWidthToViewWidth = vcWidthToViewWidth else {
             print("returning from mix")
             return
         }
@@ -351,7 +358,9 @@ class BhiMixer {
                                 backTextureHeight: Int32(backTextureHeight),
                                 mode: filterParameters.sourceMode,
                                 spacetimeMode: filterParameters.spaceTimeMode,
-                                isBlackHoleInFront: isBlackHoleInFront)
+                                isBlackHoleInFront: isBlackHoleInFront,
+                                vcWidthToViewWidth: vcWidthToViewWidth,
+                                vcEdgeInViewTextureCoords: vcEdgeInViewTextureCoords)
         memcpy(uniformsBuffer.contents(), &uniforms, MemoryLayout<Uniforms>.size)
         
         renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0)

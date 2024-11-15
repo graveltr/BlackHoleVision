@@ -51,6 +51,8 @@ struct MultiCamView: UIViewControllerRepresentable {
         @objc func handleControlsButton(_ sender: UIButton) {
             multiCamViewController!.fovSegmentedControl.isHidden = !(multiCamViewController!.fovSegmentedControl.isHidden)
             multiCamViewController!.spacetimeSegmentedControl.isHidden = !(multiCamViewController!.spacetimeSegmentedControl.isHidden)
+            multiCamViewController!.spinStepper.isHidden = !(multiCamViewController!.spinStepper.isHidden)
+            multiCamViewController!.spinReadoutLabel.isHidden = !(multiCamViewController!.spinReadoutLabel.isHidden)
         }
         
         @objc func handleCameraFlipButton(_ sender: UIButton) {
@@ -161,19 +163,25 @@ struct MultiCamView: UIViewControllerRepresentable {
 
         let mtkView = context.coordinator.mtkView
         let aRatio = 1920.0 / 1080.0
-        mtkView.frame = CGRect(x: 0,
-                               y: 0,
-                               width:   viewController.view.bounds.width,
-                               height:  viewController.view.bounds.height)
         
-        // TODO: make sure the centering is correct
-        /*
-        mtkView.frame = CGRect(x: 0,
-                               y: 0,
-                               width:   viewController.view.bounds.height / aRatio,
-                               height:  viewController.view.bounds.height)
-        */
         
+        var width: Double
+        let L = viewController.view.bounds.width
+        if L < (viewController.view.bounds.height / aRatio) {
+            width = viewController.view.bounds.height / aRatio
+        } else {
+            width = viewController.view.bounds.width
+        }
+
+        let xHat = (L / 2.0) - (width / 2.0)
+        let xHatOverWidth = xHat / width;
+        mtkView.frame = CGRect(x: xHat,
+                               y: 0,
+                               width: width,
+                               height:  viewController.view.bounds.height)
+        context.coordinator.mixer.vcWidthToViewWidth = Float(L) / Float(width)
+        context.coordinator.mixer.vcEdgeInViewTextureCoords = abs(Float(xHatOverWidth))
+
         viewController.mtkView = mtkView
         viewController.view.addSubview(mtkView)
         viewController.view.sendSubviewToBack(mtkView)
@@ -205,6 +213,9 @@ struct MultiCamView: UIViewControllerRepresentable {
 
         context.coordinator.multiCamViewController = viewController
         context.coordinator.mixer.filterParameters.a = context.coordinator.getCurrSpinValue()
+        
+        // TODO: pass relevant information to determine pips to mixer uniforms
+        
         return viewController
     }
     

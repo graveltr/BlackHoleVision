@@ -42,6 +42,8 @@ struct Uniforms {
     int mode;
     int spacetimeMode;
     int isBlackHoleInFront;
+    float vcWidthToViewWidth;
+    float vcEdgeInViewTextureCoords;
 };
 
 struct PreComputeUniforms {
@@ -363,6 +365,16 @@ vertex VertexOut vertexShader(uint vertexID [[vertex_id]]) {
     return out;
 }
 
+// Convert from origin top left, +x to the right, +y down coords to
+// origin top right, +y to the left, +x down.
+float2 fromStandardTextureCoordsToAppleTextureCoords(float2 inCoords) {
+    return float2(inCoords.y, 1.0 - inCoords.x);
+}
+
+float2 fromAppleTextureCoordsToStandardTextureCoords(float2 inCoords) {
+    return float2(1.0 - inCoords.y, inCoords.x);
+}
+
 float2 getPipCoord(float2 pipOrigin, float pipHeight, float pipWidth, float2 coord) {
     float2 displacement = coord - pipOrigin;
     float2 renormalizedCoord = float2(displacement.x / pipWidth, displacement.y / pipHeight);
@@ -454,16 +466,17 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
                                           constant Uniforms &uniforms [[buffer(0)]]) {
     constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::linear);
     
-    float aRatio = 0.9;
-    float pipHeight = 0.22;
+    /*
+    float aRatio = 1920.0 / 1080.0;
+    float pipHeight = 0.2;
     float pipWidth = pipHeight * aRatio;
-    
-    float edgeSpacing = 0.05;
+
+    float edgeSpacing = 0.1;
     
     float2 backPipOrigin = float2(edgeSpacing, 1.0 - pipHeight - edgeSpacing);
     float2 frontPipOrigin = float2(edgeSpacing, edgeSpacing);
 
-    float2 backPipCoord = getPipCoord(backPipOrigin, pipHeight, pipWidth, in.texCoord);
+    float2 backPipCoord = getPipCoord(backPipOrigin, pipWidth, pipHeight, in.texCoord);
     if (    0.0 < backPipCoord.x && backPipCoord.x < 1.0
         &&  0.0 < backPipCoord.y && backPipCoord.y < 1.0) {
         float3 rgb = sampleYUVTexture(backYTexture, backUVTexture, backPipCoord);
@@ -476,7 +489,61 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         float3 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, frontPipCoord);
         return float4(rgb, 1.0);
     }
+    */
     
+    
+    // TODO: pass these values
+    float vcWidthToViewWidth = uniforms.vcWidthToViewWidth;
+    float vcEdgeInViewTextureCoords = uniforms.vcEdgeInViewTextureCoords;
+    
+    // float vcWidthToViewWidth = 0.821;
+    // float vcEdgeInViewTextureCoords = 0.0893;
+    
+    float vcPipWidth = 0.2;
+
+    // Work in vc texture coordinates since that's what matches to the visible screen
+    float verticalMargin = 0.1;
+    float horizontalMargin = 0.05;
+    float2 vcTextureCoordOfBackPipOrigin   = float2(horizontalMargin                    , verticalMargin);
+    float2 vcTextureCoordOfFrontPipOrigin  = float2(1.0 - horizontalMargin - vcPipWidth , verticalMargin);
+    
+    // Because the frame is already 1920 x 1080 the aspect ratio in
+    // texture coordinate dimensions is just 1 : 1
+    float pipWidth  = vcPipWidth * vcWidthToViewWidth;
+    float pipHeight = pipWidth;
+    
+    float2 viewTextureCoordOfBackPipOrigin;
+    viewTextureCoordOfBackPipOrigin.x = vcEdgeInViewTextureCoords + vcWidthToViewWidth * vcTextureCoordOfBackPipOrigin.x;
+    viewTextureCoordOfBackPipOrigin.y = vcTextureCoordOfBackPipOrigin.y;
+    
+    float2 viewTextureCoordOfFrontPipOrigin;
+    viewTextureCoordOfFrontPipOrigin.x = vcEdgeInViewTextureCoords + vcWidthToViewWidth * vcTextureCoordOfFrontPipOrigin.x;
+    viewTextureCoordOfFrontPipOrigin.y = vcTextureCoordOfFrontPipOrigin.y;
+    
+    float2 inViewStandardTextureCoords = fromAppleTextureCoordsToStandardTextureCoords(in.texCoord);
+
+    float2 inBackPipStandardTextureCoords = getPipCoord(viewTextureCoordOfBackPipOrigin,
+                                                        pipHeight,
+                                                        pipWidth,
+                                                        inViewStandardTextureCoords);
+    float2 inBackPipAppleTextureCoords = fromStandardTextureCoordsToAppleTextureCoords(inBackPipStandardTextureCoords);
+    if (    0.0 < inBackPipAppleTextureCoords.x && inBackPipAppleTextureCoords.x < 1.0
+        &&  0.0 < inBackPipAppleTextureCoords.y && inBackPipAppleTextureCoords.y < 1.0) {
+        float3 rgb = sampleYUVTexture(backYTexture, backUVTexture, inBackPipAppleTextureCoords);
+        return float4(rgb, 1.0);
+    }
+    
+    float2 inFrontPipStandardTextureCoords = getPipCoord(viewTextureCoordOfFrontPipOrigin,
+                                                         pipHeight,
+                                                         pipWidth,
+                                                         inViewStandardTextureCoords);
+    float2 inFrontPipAppleTextureCoords = fromStandardTextureCoordsToAppleTextureCoords(inFrontPipStandardTextureCoords);
+    if (    0.0 < inFrontPipAppleTextureCoords.x && inFrontPipAppleTextureCoords.x < 1.0
+        &&  0.0 < inFrontPipAppleTextureCoords.y && inFrontPipAppleTextureCoords.y < 1.0) {
+        float3 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, inFrontPipAppleTextureCoords);
+        return float4(rgb, 1.0);
+    }
+
     float4 lutSample;
     if (uniforms.spacetimeMode == 2) {
         uint4 lutSampleUint = mmaLutTexture.sample(s, float2(in.texCoord.y, in.texCoord.x));
