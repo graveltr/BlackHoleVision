@@ -490,14 +490,13 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         return float4(rgb, 1.0);
     }
     */
+    // float vcWidthToViewWidth = 0.821;
+    // float vcEdgeInViewTextureCoords = 0.0893;
+
     
-    
-    // TODO: pass these values
     float vcWidthToViewWidth = uniforms.vcWidthToViewWidth;
     float vcEdgeInViewTextureCoords = uniforms.vcEdgeInViewTextureCoords;
     
-    // float vcWidthToViewWidth = 0.821;
-    // float vcEdgeInViewTextureCoords = 0.0893;
     
     float vcPipWidth = 0.2;
 

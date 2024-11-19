@@ -51,8 +51,10 @@ struct MultiCamView: UIViewControllerRepresentable {
         @objc func handleControlsButton(_ sender: UIButton) {
             multiCamViewController!.fovSegmentedControl.isHidden = !(multiCamViewController!.fovSegmentedControl.isHidden)
             multiCamViewController!.spacetimeSegmentedControl.isHidden = !(multiCamViewController!.spacetimeSegmentedControl.isHidden)
-            multiCamViewController!.spinStepper.isHidden = !(multiCamViewController!.spinStepper.isHidden)
-            multiCamViewController!.spinReadoutLabel.isHidden = !(multiCamViewController!.spinReadoutLabel.isHidden)
+            if mixer.filterParameters.spaceTimeMode == 2 {
+                multiCamViewController!.spinStepper.isHidden = !(multiCamViewController!.spinStepper.isHidden)
+                multiCamViewController!.spinReadoutLabel.isHidden = !(multiCamViewController!.spinReadoutLabel.isHidden)
+            }
         }
         
         @objc func handleCameraFlipButton(_ sender: UIButton) {
