@@ -467,6 +467,7 @@
 				INFOPLIST_FILE = GeodesicGaze/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Black Hole Vision";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The app continuously records images from the camera to display a lensed view of the user's surroundings in real time.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app can capture screenshots and store them the photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -509,6 +510,7 @@
 				INFOPLIST_FILE = GeodesicGaze/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Black Hole Vision";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The app continuously records images from the camera to display a lensed view of the user's surroundings in real time.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app can capture screenshots and store them the photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

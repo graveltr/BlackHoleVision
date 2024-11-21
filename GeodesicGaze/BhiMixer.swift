@@ -7,6 +7,8 @@
 
 import MetalKit
 import Foundation
+import UIKit
+import Photos
 import simd
 
 class BhiMixer {
@@ -21,6 +23,7 @@ class BhiMixer {
         var isBlackHoleInFront: Int32
         var vcWidthToViewWidth: Float
         var vcEdgeInViewTextureCoords: Float
+        var isPipEnabled: Int32
     }
     
     struct PreComputeUniforms {
@@ -73,6 +76,9 @@ class BhiMixer {
     
     var vcWidthToViewWidth: Float?
     var vcEdgeInViewTextureCoords: Float?
+    var isPipEnabled: Int32 = 1
+    
+    var shouldTakeScreenshot: Bool = false
 
     init(device: MTLDevice) {
         self.device = device
@@ -352,7 +358,7 @@ class BhiMixer {
             return
         }
         
-        var uniforms = Uniforms(frontTextureWidth: Int32(frontTextureWidth), 
+        var uniforms = Uniforms(frontTextureWidth: Int32(frontTextureWidth),
                                 frontTextureHeight: Int32(frontTextureHeight),
                                 backTextureWidth: Int32(backTextureWidth),
                                 backTextureHeight: Int32(backTextureHeight),
@@ -360,7 +366,8 @@ class BhiMixer {
                                 spacetimeMode: filterParameters.spaceTimeMode,
                                 isBlackHoleInFront: isBlackHoleInFront,
                                 vcWidthToViewWidth: vcWidthToViewWidth,
-                                vcEdgeInViewTextureCoords: vcEdgeInViewTextureCoords)
+                                vcEdgeInViewTextureCoords: vcEdgeInViewTextureCoords,
+                                isPipEnabled: isPipEnabled)
         memcpy(uniformsBuffer.contents(), &uniforms, MemoryLayout<Uniforms>.size)
         
         renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0)
@@ -383,11 +390,52 @@ class BhiMixer {
         renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
         renderEncoder.endEncoding()
         
+        
         renderCommandBuffer.present(drawable)
         renderCommandBuffer.commit()
         renderCommandBuffer.waitUntilCompleted()
+        
+        if shouldTakeScreenshot {
+            takeScreenshot(drawable: drawable)
+            shouldTakeScreenshot = false
+        }
     }
     
+    private func takeScreenshot(drawable: CAMetalDrawable) {
+        guard let screenshotImage = textureToImage(drawable.texture) else {
+            print("unable to take convert texture to ui image")
+            return
+        }
+        
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.creationRequestForAsset(from: screenshotImage)
+        }) { success, error in
+            if let error = error {
+                print("error saving to photos: \(error.localizedDescription)")
+            } else {
+                print("successfully saved")
+            }
+        }
+    }
+    
+    private func textureToImage(_ texture: MTLTexture) -> UIImage? {
+        let ciContext = CIContext(mtlDevice: device)
+        guard var ciImage = CIImage(mtlTexture: texture, options: [.colorSpace: CGColorSpaceCreateDeviceRGB()]) else {
+            print("Failed to create ciimage")
+            return nil
+        }
+        
+        let transform = CGAffineTransformMake(1, 0, 0, -1, 0, ciImage.extent.size.height)
+        ciImage = ciImage.transformed(by: transform)
+        
+        guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else {
+            print("Failed to create cgimage")
+            return nil
+        }
+        let uiImage = UIImage(cgImage: cgImage)
+        
+        return uiImage
+    }
     
     private func cpuPostProcessOther() {
         testSplineParameters()

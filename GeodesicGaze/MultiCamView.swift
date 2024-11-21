@@ -60,6 +60,14 @@ struct MultiCamView: UIViewControllerRepresentable {
         @objc func handleCameraFlipButton(_ sender: UIButton) {
             mixer.isBlackHoleInFront = (mixer.isBlackHoleInFront == 1) ? 0 : 1
         }
+        
+        @objc func handlePipButton(_ sender: UIButton) {
+            mixer.isPipEnabled = (mixer.isPipEnabled == 1) ? 0 : 1
+        }
+        
+        @objc func handleScreenshotButton(_ sender: UIButton) {
+            mixer.shouldTakeScreenshot = true
+        }
 
         @objc func spinStepperValueChanged(_ sender: UIStepper) { 
             multiCamViewController!.spinReadoutLabel.text = "a: \(getCurrSpinValue())"
@@ -194,6 +202,14 @@ struct MultiCamView: UIViewControllerRepresentable {
                                                 action: #selector(context.coordinator.handleControlsButton(_:)),
                                                 for: .touchUpInside)
         
+        viewController.pipButton.addTarget(context.coordinator,
+                                           action: #selector(context.coordinator.handlePipButton(_:)),
+                                           for: .touchUpInside)
+        
+        viewController.screenshotButton.addTarget(context.coordinator,
+                                                  action: #selector(context.coordinator.handleScreenshotButton(_:)),
+                                                  for: .touchUpInside)
+
         viewController.cameraFlipButton.addTarget(context.coordinator,
                                                   action: #selector(context.coordinator.handleCameraFlipButton(_:)),
                                                   for: .touchUpInside)
@@ -230,7 +246,9 @@ class MultiCamViewController: UIViewController {
     @IBOutlet weak var spinReadoutLabel: UILabel!
     
     @IBOutlet weak var controlsButton: UIButton!
+    @IBOutlet weak var pipButton: UIButton!
     @IBOutlet weak var cameraFlipButton: UIButton!
+    @IBOutlet weak var screenshotButton: UIButton!
 
     @IBOutlet weak var spacetimeSegmentedControl: UISegmentedControl!
     @IBOutlet weak var fovSegmentedControl: UISegmentedControl!

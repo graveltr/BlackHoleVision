@@ -27,6 +27,9 @@
                             </segmentedControl>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="des-wE-Uhc">
                                 <rect key="frame" x="143" y="100" width="89" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="89" id="gob-Sk-IS2"/>
+                                </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Controls">
                                     <color key="baseBackgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
@@ -59,6 +62,22 @@
                                     <imageReference key="image" image="camera.rotate" catalog="system" symbolScale="large"/>
                                 </buttonConfiguration>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VmY-Il-MLf">
+                                <rect key="frame" x="143" y="57" width="89" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="89" id="BNv-8g-c1F"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="PiP">
+                                    <color key="baseBackgroundColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
+                                </buttonConfiguration>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zXu-sr-8mj">
+                                <rect key="frame" x="296" y="727" width="50" height="35"/>
+                                <color key="tintColor" red="0.20002504809999999" green="0.31710681219999998" blue="0.41835320860000003" alpha="0.80369900039999997" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="camera.circle" catalog="system"/>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -67,20 +86,27 @@
                             <constraint firstItem="EXP-M8-Mff" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="1iJ-s8-Qiq"/>
                             <constraint firstAttribute="bottomMargin" secondItem="DGt-gs-ky1" secondAttribute="bottom" constant="135" id="A5o-Sh-k5s"/>
                             <constraint firstItem="rfq-G0-ZzP" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="NH2-5I-PYg"/>
+                            <constraint firstItem="des-wE-Uhc" firstAttribute="top" secondItem="VmY-Il-MLf" secondAttribute="bottom" constant="8" symbolic="YES" id="O4Q-lV-XTv"/>
                             <constraint firstItem="EXP-M8-Mff" firstAttribute="top" secondItem="des-wE-Uhc" secondAttribute="bottom" constant="16" id="OTd-dO-cUS"/>
                             <constraint firstItem="des-wE-Uhc" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="50" id="Qfg-eh-VMd"/>
                             <constraint firstItem="sWv-We-cV7" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="Qgd-BB-IV8"/>
                             <constraint firstItem="des-wE-Uhc" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="TBF-ep-1x5"/>
+                            <constraint firstItem="zXu-sr-8mj" firstAttribute="leading" secondItem="sWv-We-cV7" secondAttribute="trailing" constant="8" symbolic="YES" id="UPm-pm-FfJ"/>
+                            <constraint firstItem="VmY-Il-MLf" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="Win-5j-y7I"/>
                             <constraint firstItem="QYR-JU-smz" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="a8F-T5-ByE"/>
                             <constraint firstItem="DGt-gs-ky1" firstAttribute="top" secondItem="rfq-G0-ZzP" secondAttribute="bottom" constant="8" id="dZR-pD-2OF"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="sWv-We-cV7" secondAttribute="bottom" constant="18" id="mrg-E8-TN3"/>
                             <constraint firstItem="sWv-We-cV7" firstAttribute="top" secondItem="QYR-JU-smz" secondAttribute="bottom" constant="24" id="oz5-h1-xlZ"/>
+                            <constraint firstItem="des-wE-Uhc" firstAttribute="top" secondItem="VmY-Il-MLf" secondAttribute="bottom" constant="8" symbolic="YES" id="qWj-xO-Ce3"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="zXu-sr-8mj" secondAttribute="bottom" constant="16" id="zm8-7S-mQE"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="cameraFlipButton" destination="EXP-M8-Mff" id="cle-Ci-OJ4"/>
                         <outlet property="controlsButton" destination="des-wE-Uhc" id="geG-aN-UiL"/>
                         <outlet property="fovSegmentedControl" destination="sWv-We-cV7" id="4GY-rf-L2d"/>
+                        <outlet property="pipButton" destination="VmY-Il-MLf" id="Iyg-zk-la5"/>
+                        <outlet property="screenshotButton" destination="zXu-sr-8mj" id="61O-lW-YZx"/>
                         <outlet property="spacetimeSegmentedControl" destination="QYR-JU-smz" id="cgH-VN-4rO"/>
                         <outlet property="spinReadoutLabel" destination="rfq-G0-ZzP" id="12w-on-gWf"/>
                         <outlet property="spinStepper" destination="DGt-gs-ky1" id="P7l-42-UCg"/>
@@ -88,10 +114,11 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="81.159420289855078" y="3.3482142857142856"/>
+            <point key="canvasLocation" x="80.799999999999997" y="2.9556650246305418"/>
         </scene>
     </scenes>
     <resources>
+        <image name="camera.circle" catalog="system" width="128" height="123"/>
         <image name="camera.rotate" catalog="system" width="128" height="93"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>

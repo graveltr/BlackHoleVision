@@ -44,6 +44,7 @@ struct Uniforms {
     int isBlackHoleInFront;
     float vcWidthToViewWidth;
     float vcEdgeInViewTextureCoords;
+    int isPipEnabled;
 };
 
 struct PreComputeUniforms {
@@ -493,54 +494,54 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
     // float vcWidthToViewWidth = 0.821;
     // float vcEdgeInViewTextureCoords = 0.0893;
 
-    
-    float vcWidthToViewWidth = uniforms.vcWidthToViewWidth;
-    float vcEdgeInViewTextureCoords = uniforms.vcEdgeInViewTextureCoords;
-    
-    
-    float vcPipWidth = 0.2;
+    if (uniforms.isPipEnabled == 1) {
+        float vcWidthToViewWidth = uniforms.vcWidthToViewWidth;
+        float vcEdgeInViewTextureCoords = uniforms.vcEdgeInViewTextureCoords;
+        
+        float vcPipWidth = 0.2;
 
-    // Work in vc texture coordinates since that's what matches to the visible screen
-    float verticalMargin = 0.1;
-    float horizontalMargin = 0.05;
-    float2 vcTextureCoordOfBackPipOrigin   = float2(horizontalMargin                    , verticalMargin);
-    float2 vcTextureCoordOfFrontPipOrigin  = float2(1.0 - horizontalMargin - vcPipWidth , verticalMargin);
-    
-    // Because the frame is already 1920 x 1080 the aspect ratio in
-    // texture coordinate dimensions is just 1 : 1
-    float pipWidth  = vcPipWidth * vcWidthToViewWidth;
-    float pipHeight = pipWidth;
-    
-    float2 viewTextureCoordOfBackPipOrigin;
-    viewTextureCoordOfBackPipOrigin.x = vcEdgeInViewTextureCoords + vcWidthToViewWidth * vcTextureCoordOfBackPipOrigin.x;
-    viewTextureCoordOfBackPipOrigin.y = vcTextureCoordOfBackPipOrigin.y;
-    
-    float2 viewTextureCoordOfFrontPipOrigin;
-    viewTextureCoordOfFrontPipOrigin.x = vcEdgeInViewTextureCoords + vcWidthToViewWidth * vcTextureCoordOfFrontPipOrigin.x;
-    viewTextureCoordOfFrontPipOrigin.y = vcTextureCoordOfFrontPipOrigin.y;
-    
-    float2 inViewStandardTextureCoords = fromAppleTextureCoordsToStandardTextureCoords(in.texCoord);
+        // Work in vc texture coordinates since that's what matches to the visible screen
+        float verticalMargin = 0.1;
+        float horizontalMargin = 0.05;
+        float2 vcTextureCoordOfBackPipOrigin   = float2(horizontalMargin                    , verticalMargin);
+        float2 vcTextureCoordOfFrontPipOrigin  = float2(1.0 - horizontalMargin - vcPipWidth , verticalMargin);
+        
+        // Because the frame is already 1920 x 1080 the aspect ratio in
+        // texture coordinate dimensions is just 1 : 1
+        float pipWidth  = vcPipWidth * vcWidthToViewWidth;
+        float pipHeight = pipWidth;
+        
+        float2 viewTextureCoordOfBackPipOrigin;
+        viewTextureCoordOfBackPipOrigin.x = vcEdgeInViewTextureCoords + vcWidthToViewWidth * vcTextureCoordOfBackPipOrigin.x;
+        viewTextureCoordOfBackPipOrigin.y = vcTextureCoordOfBackPipOrigin.y;
+        
+        float2 viewTextureCoordOfFrontPipOrigin;
+        viewTextureCoordOfFrontPipOrigin.x = vcEdgeInViewTextureCoords + vcWidthToViewWidth * vcTextureCoordOfFrontPipOrigin.x;
+        viewTextureCoordOfFrontPipOrigin.y = vcTextureCoordOfFrontPipOrigin.y;
+        
+        float2 inViewStandardTextureCoords = fromAppleTextureCoordsToStandardTextureCoords(in.texCoord);
 
-    float2 inBackPipStandardTextureCoords = getPipCoord(viewTextureCoordOfBackPipOrigin,
-                                                        pipHeight,
-                                                        pipWidth,
-                                                        inViewStandardTextureCoords);
-    float2 inBackPipAppleTextureCoords = fromStandardTextureCoordsToAppleTextureCoords(inBackPipStandardTextureCoords);
-    if (    0.0 < inBackPipAppleTextureCoords.x && inBackPipAppleTextureCoords.x < 1.0
-        &&  0.0 < inBackPipAppleTextureCoords.y && inBackPipAppleTextureCoords.y < 1.0) {
-        float3 rgb = sampleYUVTexture(backYTexture, backUVTexture, inBackPipAppleTextureCoords);
-        return float4(rgb, 1.0);
-    }
-    
-    float2 inFrontPipStandardTextureCoords = getPipCoord(viewTextureCoordOfFrontPipOrigin,
-                                                         pipHeight,
-                                                         pipWidth,
-                                                         inViewStandardTextureCoords);
-    float2 inFrontPipAppleTextureCoords = fromStandardTextureCoordsToAppleTextureCoords(inFrontPipStandardTextureCoords);
-    if (    0.0 < inFrontPipAppleTextureCoords.x && inFrontPipAppleTextureCoords.x < 1.0
-        &&  0.0 < inFrontPipAppleTextureCoords.y && inFrontPipAppleTextureCoords.y < 1.0) {
-        float3 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, inFrontPipAppleTextureCoords);
-        return float4(rgb, 1.0);
+        float2 inBackPipStandardTextureCoords = getPipCoord(viewTextureCoordOfBackPipOrigin,
+                                                            pipHeight,
+                                                            pipWidth,
+                                                            inViewStandardTextureCoords);
+        float2 inBackPipAppleTextureCoords = fromStandardTextureCoordsToAppleTextureCoords(inBackPipStandardTextureCoords);
+        if (    0.0 < inBackPipAppleTextureCoords.x && inBackPipAppleTextureCoords.x < 1.0
+            &&  0.0 < inBackPipAppleTextureCoords.y && inBackPipAppleTextureCoords.y < 1.0) {
+            float3 rgb = sampleYUVTexture(backYTexture, backUVTexture, inBackPipAppleTextureCoords);
+            return float4(rgb, 1.0);
+        }
+        
+        float2 inFrontPipStandardTextureCoords = getPipCoord(viewTextureCoordOfFrontPipOrigin,
+                                                             pipHeight,
+                                                             pipWidth,
+                                                             inViewStandardTextureCoords);
+        float2 inFrontPipAppleTextureCoords = fromStandardTextureCoordsToAppleTextureCoords(inFrontPipStandardTextureCoords);
+        if (    0.0 < inFrontPipAppleTextureCoords.x && inFrontPipAppleTextureCoords.x < 1.0
+            &&  0.0 < inFrontPipAppleTextureCoords.y && inFrontPipAppleTextureCoords.y < 1.0) {
+            float3 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, inFrontPipAppleTextureCoords);
+            return float4(rgb, 1.0);
+        }
     }
 
     float4 lutSample;
