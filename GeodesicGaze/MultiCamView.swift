@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 import AVFoundation
 import MetalKit
+import AudioToolbox
 
 struct MultiCamView: UIViewControllerRepresentable {
     
@@ -67,6 +68,19 @@ struct MultiCamView: UIViewControllerRepresentable {
         
         @objc func handleScreenshotButton(_ sender: UIButton) {
             mixer.shouldTakeScreenshot = true
+            
+            guard let flashView = multiCamViewController?.flashView else {
+                print("no flashview")
+                return
+            }
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                flashView.alpha = 1
+            })
+            UIView.animate(withDuration: 0.2, animations: {
+                flashView.alpha = 0
+            })
+            AudioServicesPlaySystemSound(1108)
         }
 
         @objc func spinStepperValueChanged(_ sender: UIStepper) { 
@@ -232,7 +246,14 @@ struct MultiCamView: UIViewControllerRepresentable {
         context.coordinator.multiCamViewController = viewController
         context.coordinator.mixer.filterParameters.a = context.coordinator.getCurrSpinValue()
         
-        // TODO: pass relevant information to determine pips to mixer uniforms
+        let flashView = UIView(frame: CGRect(x: 0, y: 0,
+                                             width: viewController.view.bounds.width,
+                                             height: viewController.view.bounds.height))
+        flashView.backgroundColor = .white
+        flashView.alpha = 0
+        viewController.flashView = flashView
+        viewController.view.addSubview(flashView)
+        viewController.view.bringSubviewToFront(flashView)
         
         return viewController
     }
@@ -242,6 +263,7 @@ struct MultiCamView: UIViewControllerRepresentable {
 
 class MultiCamViewController: UIViewController {
     var mtkView: MTKView!
+    var flashView: UIView!
     
     @IBOutlet weak var spinReadoutLabel: UILabel!
     
