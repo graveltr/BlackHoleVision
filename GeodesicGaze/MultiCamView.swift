@@ -142,6 +142,14 @@ struct MultiCamView: UIViewControllerRepresentable {
             mixer.filterParameters.a = getCurrSpinValue()
             mixer.needsNewLutTexture = true
         }
+        
+        @objc func distanceSliderValueChanged(_ sender: UISlider) {
+            let dist: Float = sender.value
+            mixer.filterParameters.d = dist
+            mixer.needsNewLutTexture = true
+            
+            multiCamViewController?.distanceReadoutLabel.text = "distance: \(String(format: "%.0f", dist)) M"
+        }
 
         @objc func spacetimeModeChanged(_ sender: UISegmentedControl) {
             switch sender.selectedSegmentIndex {
@@ -170,7 +178,9 @@ struct MultiCamView: UIViewControllerRepresentable {
         func handleFlatSpaceSelection() {
             multiCamViewController?.spinReadoutLabel.isHidden = true
             multiCamViewController?.spinStepper.isHidden = true
-            
+            multiCamViewController?.distanceReadoutLabel.isHidden = true
+            multiCamViewController?.distanceSlider.isHidden = true
+
             multiCamViewController?.fovSegmentedControl.selectedSegmentIndex = 0
             multiCamViewController?.fovSegmentedControl.isEnabled = false
             mixer.filterParameters.sourceMode = 1
@@ -182,13 +192,21 @@ struct MultiCamView: UIViewControllerRepresentable {
             multiCamViewController?.spinReadoutLabel.isHidden = true
             multiCamViewController?.spinStepper.isHidden = true
             
+            multiCamViewController?.distanceReadoutLabel.text = "distance: \(String(format: "%.0f", getCurrDistanceValue())) M"
+            multiCamViewController?.distanceReadoutLabel.isHidden = false
+            multiCamViewController?.distanceSlider.isHidden = false
+
             mixer.filterParameters.spaceTimeMode = 1
+            mixer.filterParameters.d = getCurrDistanceValue()
             
             multiCamViewController?.fovSegmentedControl.isEnabled = true
 
             mixer.needsNewLutTexture = true
         }
         func handleKerrSelection() { 
+            multiCamViewController?.distanceReadoutLabel.isHidden = true
+            multiCamViewController?.distanceSlider.isHidden = true
+            
             multiCamViewController?.spinReadoutLabel.text = "Black hole spin: \(getCurrSpinValue() * 100)%"
             multiCamViewController?.spinReadoutLabel.isHidden = false
             
@@ -218,6 +236,10 @@ struct MultiCamView: UIViewControllerRepresentable {
         func getCurrSpinValue() -> Float {
             let currSpinIdx = Int(multiCamViewController!.spinStepper.value)
             return spinValues[currSpinIdx]
+        }
+        
+        func getCurrDistanceValue() -> Float {
+            return multiCamViewController!.distanceSlider.value
         }
     }
 
@@ -302,9 +324,15 @@ struct MultiCamView: UIViewControllerRepresentable {
                                                      action: #selector(context.coordinator.fovModeChanged(_:)),
                                                      for: .valueChanged)
 
+        viewController.distanceSlider.addTarget(context.coordinator,
+                                                action: #selector(context.coordinator.distanceSliderValueChanged(_:)),
+                                                for: .valueChanged)
+        
         viewController.spinStepper.isHidden = true
         viewController.fovSegmentedControl.isEnabled = false
-
+        viewController.distanceSlider.isHidden = true
+        viewController.distanceReadoutLabel.isHidden = true
+        
         context.coordinator.multiCamViewController = viewController
         context.coordinator.mixer.filterParameters.a = context.coordinator.getCurrSpinValue()
         
@@ -347,7 +375,8 @@ class MultiCamViewController: UIViewController {
     @IBOutlet weak var infoTextView: UITextView!
 
     @IBOutlet weak var spinReadoutLabel: UILabel!
-    
+    @IBOutlet weak var distanceReadoutLabel: UILabel!
+
     @IBOutlet weak var controlsButton: UIButton!
     @IBOutlet weak var pipButton: UIButton!
     @IBOutlet weak var cameraFlipButton: UIButton!
@@ -360,6 +389,8 @@ class MultiCamViewController: UIViewController {
     
     @IBOutlet weak var spinStepper: UIStepper!
     
+    @IBOutlet weak var distanceSlider: UISlider!
+
     override func viewDidLoad() {
         super.viewDidLoad()
     }

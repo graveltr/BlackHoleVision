@@ -119,6 +119,123 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
     float2 relativePixelCoords = pixelCoords - center;
     
     // Convert the pixel coordinates to coordinates in the image plane
+    float lengthPerPixel = 0.0014;
+    float2 imagePlaneCoords = lengthPerPixel * relativePixelCoords;
+
+    // Obtain the polar coordinates of this image plane location
+    float f = 4.25;
+    float rho = sqrt(imagePlaneCoords.x * imagePlaneCoords.x + imagePlaneCoords.y * imagePlaneCoords.y);
+    
+    float varphi = atan2(rho, f);
+    float b = ro * sin(varphi);
+    
+    // Notice the swapping ... the first texture coordinate is vertical
+    float psi = atan2(imagePlaneCoords.x, imagePlaneCoords.y);
+
+    SchwarzschildLenseResult lenseResult = schwarzschildLense(M, ro, rs, b);
+    if (lenseResult.status == FAILURE) {
+        result.status = ERROR;
+        return result;
+    } else if (lenseResult.status == EMITTED_FROM_BLACK_HOLE) {
+        result.status = EMITTED_FROM_BLACK_HOLE;
+        return result;
+    }
+    float varphitilde = lenseResult.varphitilde;
+    bool ccw = lenseResult.ccw;
+    
+    if (sourceMode == FULL_FOV_MODE) {
+        float3 vsSpherical = float3(rs, M_PI_F / 2.0, lenseResult.phif);
+        float3 vsCartesian = sphericalToCartesian(vsSpherical);
+        
+        // Rotation by psi about the x-axis
+        // Aligns the plane of motion with the equatorial plane
+        float3 r1 = float3(1.0, 0.0,        0.0);
+        float3 r2 = float3(0.0, cos(psi),   -1.0 * sin(psi));
+        float3 r3 = float3(0.0, sin(psi),   cos(psi));
+
+        // Matrix multiplication by the matrix with rows r1-3
+        float3 vsHatCartesian = float3(dot(r1, vsCartesian),
+                                       dot(r2, vsCartesian),
+                                       dot(r3, vsCartesian));
+        
+        // The spherical coordinates of ray's intersection with the source sphere
+        // in the fixed, reference frame.
+        float3 vsHatSpherical = cartesianToSpherical(vsHatCartesian);
+        
+        float phifNormalized = normalizeAngle(vsHatSpherical.z);
+        float thetaf = vsHatSpherical.y;
+        
+        float oneTwoBdd = M_PI_F / 2.0;
+        float threeFourBdd = 3.0 * M_PI_F / 2.0;
+        
+        float v = thetaf / M_PI_F;
+        float u = 0.0;
+        
+        // If in quadrant I
+        if (0.0 <= phifNormalized && phifNormalized <= oneTwoBdd) {
+            u = 0.5 + 0.5 * (phifNormalized / oneTwoBdd);
+            result.status = SUCCESS_FRONT_TEXTURE;
+        } else if (threeFourBdd <= phifNormalized && phifNormalized <= 2.0 * M_PI_F) { // quadrant IV
+            u = 0.5 * ((phifNormalized - threeFourBdd) / (2.0 * M_PI_F - threeFourBdd));
+            result.status = SUCCESS_FRONT_TEXTURE;
+        } else { // II or III
+            u = (phifNormalized - oneTwoBdd) / (threeFourBdd - oneTwoBdd);
+            result.status = SUCCESS_BACK_TEXTURE;
+        }
+        // NOTICE THAT u and v are swapped! Same reason as before.
+        float2 transformedTexCoord = float2(flipTextureCoord(v), flipTextureCoord(u));
+        
+        result.coord = transformedTexCoord;
+
+        return result;
+    }
+
+    float rhotilde = f * tan(varphitilde);
+    // Again, the swapping
+    float2 transformedImagePlaneCoords = (ccw ? -1.0 : 1.0) * float2(rhotilde * sin(psi), rhotilde * cos(psi));
+    
+    float2 transformedRelativePixelCoords = transformedImagePlaneCoords / lengthPerPixel;
+    float2 transformedPixelCoords = transformedRelativePixelCoords + center;
+    float2 transformedTexCoord = transformedPixelCoords / float2(backTextureWidth, backTextureHeight);
+
+    // Ensure that the texture coordinate is inbounds
+    if (transformedTexCoord.x < 0.0 || 1.0 < transformedTexCoord.x ||
+        transformedTexCoord.y < 0.0 || 1.0 < transformedTexCoord.y) {
+        result.status = OUTSIDE_FOV;
+        return result;
+    }
+
+    result.coord = transformedTexCoord;
+    result.status = SUCCESS;
+    return result;
+}
+
+LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateOther(float2 inCoord, int sourceMode, float M, float d) {
+    LenseTextureCoordinateResult result;
+    
+    /*
+     * The convention we use is to call the camera screen the "source" since we
+     * ray trace from this location back into the geometry.
+     */
+    float backTextureWidth = 1920.0;
+    float backTextureHeight = 1080.0;
+    
+    // We let rs and ro be large in this set up.
+    // This will allow for the usage of an approximation to the
+    // elliptic integrals during lensing.
+    float rs = d;
+    float ro = rs;
+    
+    // Calculate the pixel coordinates of the current fragment
+    float2 pixelCoords = inCoord * float2(backTextureWidth, backTextureHeight);
+    
+    // Calculate the pixel coordinates of the center of the image
+    float2 center = float2(backTextureWidth / 2.0, backTextureHeight / 2.0);
+    
+    // Place the center at the origin
+    float2 relativePixelCoords = pixelCoords - center;
+    
+    // Convert the pixel coordinates to coordinates in the image plane
     float lengthPerPixel = 0.2;
     float2 imagePlaneCoords;
     if (sourceMode == FULL_FOV_MODE) {

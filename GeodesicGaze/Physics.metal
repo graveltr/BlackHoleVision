@@ -23,7 +23,6 @@ float4 radialRoots(float M, float b) {
     float bc = 3.0 * sqrt(3.0) * M;
     
     assert(bc < b);
-    assert(bc < b);
 
     float r1 = (-2.0 * b / sqrt(3.0)) * cos((1.0 / 3.0) * acos(bc / b));
     float r2 = 0.0;
@@ -159,7 +158,8 @@ SchwarzschildLenseResult schwarzschildLense(float M, float ro, float rs, float b
     
     // If we have b < bc, then the photon trajectory enters the horizon.
     float bc = 3.0 * sqrt(3.0) * M;
-    if (b < bc) {
+    float epsilon = 0.02 * bc;
+    if (b < bc + epsilon) {
         result.status = EMITTED_FROM_BLACK_HOLE;
         return result;
     }
