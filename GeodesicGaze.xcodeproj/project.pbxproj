@@ -459,7 +459,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"GeodesicGaze/Preview Content\"";
 				DEVELOPMENT_TEAM = 53T58N547N;
 				ENABLE_PREVIEWS = YES;
@@ -467,7 +467,7 @@
 				INFOPLIST_FILE = GeodesicGaze/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Black Hole Vision";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The app continuously records images from the camera to display a lensed view of the user's surroundings in real time.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app can capture screenshots and store them the photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app captures screenshots and stores them in the photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -477,7 +477,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 3.0;
 				MTLLINKER_FLAGS = "-v";
 				MTL_COMPILER_FLAGS = "-v";
 				PRODUCT_BUNDLE_IDENTIFIER = com.GeodesicGaze;
@@ -501,7 +501,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"GeodesicGaze/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 8ZFCMGZXV4;
@@ -510,7 +510,7 @@
 				INFOPLIST_FILE = GeodesicGaze/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Black Hole Vision";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The app continuously records images from the camera to display a lensed view of the user's surroundings in real time.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app can capture screenshots and store them the photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app captures screenshots and stores them in the photo library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -520,7 +520,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 3.0;
 				MTLLINKER_FLAGS = "-v";
 				MTL_COMPILER_FLAGS = "-v";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lupsasca.bhv;

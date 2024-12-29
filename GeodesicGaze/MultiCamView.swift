@@ -82,9 +82,63 @@ struct MultiCamView: UIViewControllerRepresentable {
             })
             AudioServicesPlaySystemSound(1108)
         }
+        
+        @objc func handleDescriptionButton(_ sender: UIButton) {
+            guard let descriptionView = multiCamViewController?.descriptionView else {
+                print("no description view")
+                return
+            }
+            guard let infoTextView = multiCamViewController?.infoTextView else {
+                print("no info text view")
+                return
+            }
+            guard let activateButton = multiCamViewController?.activateButton else {
+                print("no activate button")
+                return
+            }
+            
+            activateButton.isEnabled = true
+
+            multiCamViewController?.view.bringSubviewToFront(descriptionView)
+            multiCamViewController?.view.bringSubviewToFront(infoTextView)
+            multiCamViewController?.view.bringSubviewToFront(activateButton)
+
+            UIView.animate(withDuration: 0.2, animations: {
+                descriptionView.alpha = 1
+                infoTextView.alpha = 1
+                activateButton.alpha = 1
+            })
+        }
+        
+        @objc func handleActivateButton(_ sender: UIButton) {
+            guard let descriptionView = multiCamViewController?.descriptionView else {
+                print("no description view")
+                return
+            }
+            guard let infoTextView = multiCamViewController?.infoTextView else {
+                print("no info text view")
+                return
+            }
+            guard let activateButton = multiCamViewController?.activateButton else {
+                print("no activate button")
+                return
+            }
+            
+            activateButton.isEnabled = false
+
+            multiCamViewController?.view.sendSubviewToBack(descriptionView)
+            multiCamViewController?.view.sendSubviewToBack(infoTextView)
+            multiCamViewController?.view.sendSubviewToBack(activateButton)
+
+            UIView.animate(withDuration: 0.2, animations: {
+                descriptionView.alpha = 0
+                infoTextView.alpha = 0
+                activateButton.alpha = 0
+            })
+        }
 
         @objc func spinStepperValueChanged(_ sender: UIStepper) { 
-            multiCamViewController!.spinReadoutLabel.text = "a: \(getCurrSpinValue())"
+            multiCamViewController!.spinReadoutLabel.text = "Black hole spin: \(getCurrSpinValue() * 100)%"
             mixer.filterParameters.a = getCurrSpinValue()
             mixer.needsNewLutTexture = true
         }
@@ -135,7 +189,7 @@ struct MultiCamView: UIViewControllerRepresentable {
             mixer.needsNewLutTexture = true
         }
         func handleKerrSelection() { 
-            multiCamViewController?.spinReadoutLabel.text = "a: \(getCurrSpinValue())"
+            multiCamViewController?.spinReadoutLabel.text = "Black hole spin: \(getCurrSpinValue() * 100)%"
             multiCamViewController?.spinReadoutLabel.isHidden = false
             
             multiCamViewController?.spinStepper.isHidden = false
@@ -223,6 +277,14 @@ struct MultiCamView: UIViewControllerRepresentable {
         viewController.screenshotButton.addTarget(context.coordinator,
                                                   action: #selector(context.coordinator.handleScreenshotButton(_:)),
                                                   for: .touchUpInside)
+        
+        viewController.descriptionButton.addTarget(context.coordinator,
+                                                  action: #selector(context.coordinator.handleDescriptionButton(_:)),
+                                                  for: .touchUpInside)
+        
+        viewController.activateButton.addTarget(context.coordinator,
+                                                  action: #selector(context.coordinator.handleActivateButton(_:)),
+                                                  for: .touchUpInside)
 
         viewController.cameraFlipButton.addTarget(context.coordinator,
                                                   action: #selector(context.coordinator.handleCameraFlipButton(_:)),
@@ -255,6 +317,22 @@ struct MultiCamView: UIViewControllerRepresentable {
         viewController.view.addSubview(flashView)
         viewController.view.bringSubviewToFront(flashView)
         
+        let descriptionView = UIView(frame: CGRect(x: 0, y: 0,
+                                                   width: viewController.view.bounds.width,
+                                                   height: viewController.view.bounds.height))
+        descriptionView.backgroundColor = .black
+        descriptionView.alpha = 0
+        viewController.descriptionView = descriptionView
+        viewController.view.addSubview(descriptionView)
+        viewController.view.sendSubviewToBack(descriptionView)
+        
+        viewController.infoTextView.alpha = 0
+        viewController.activateButton.alpha = 0
+        viewController.activateButton.isEnabled = false
+
+        viewController.spacetimeSegmentedControl.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10)], for: .normal)
+        viewController.fovSegmentedControl.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10)], for: .normal)
+
         return viewController
     }
     
@@ -264,13 +342,18 @@ struct MultiCamView: UIViewControllerRepresentable {
 class MultiCamViewController: UIViewController {
     var mtkView: MTKView!
     var flashView: UIView!
+    var descriptionView: UIView!
     
+    @IBOutlet weak var infoTextView: UITextView!
+
     @IBOutlet weak var spinReadoutLabel: UILabel!
     
     @IBOutlet weak var controlsButton: UIButton!
     @IBOutlet weak var pipButton: UIButton!
     @IBOutlet weak var cameraFlipButton: UIButton!
     @IBOutlet weak var screenshotButton: UIButton!
+    @IBOutlet weak var descriptionButton: UIButton!
+    @IBOutlet weak var activateButton: UIButton!
 
     @IBOutlet weak var spacetimeSegmentedControl: UISegmentedControl!
     @IBOutlet weak var fovSegmentedControl: UISegmentedControl!
