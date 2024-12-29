@@ -148,7 +148,7 @@ struct MultiCamView: UIViewControllerRepresentable {
             mixer.filterParameters.d = dist
             mixer.needsNewLutTexture = true
             
-            multiCamViewController?.distanceReadoutLabel.text = "distance: \(String(format: "%.0f", dist)) M"
+            multiCamViewController?.distanceReadoutLabel.text = "Distance from black hole: \(String(format: "%.0f", dist)) M"
         }
 
         @objc func spacetimeModeChanged(_ sender: UISegmentedControl) {
@@ -192,7 +192,7 @@ struct MultiCamView: UIViewControllerRepresentable {
             multiCamViewController?.spinReadoutLabel.isHidden = true
             multiCamViewController?.spinStepper.isHidden = true
             
-            multiCamViewController?.distanceReadoutLabel.text = "distance: \(String(format: "%.0f", getCurrDistanceValue())) M"
+            multiCamViewController?.distanceReadoutLabel.text = "Distance from black hole: \(String(format: "%.0f", getCurrDistanceValue())) M"
             multiCamViewController?.distanceReadoutLabel.isHidden = false
             multiCamViewController?.distanceSlider.isHidden = false
 
@@ -360,6 +360,7 @@ struct MultiCamView: UIViewControllerRepresentable {
 
         viewController.spacetimeSegmentedControl.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10)], for: .normal)
         viewController.fovSegmentedControl.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10)], for: .normal)
+        viewController.distanceReadoutLabel.font = UIFont.systemFont(ofSize: 12)
 
         return viewController
     }
