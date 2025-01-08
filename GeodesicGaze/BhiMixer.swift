@@ -36,6 +36,7 @@ class BhiMixer {
         var d: Float
         var a: Float
         var thetas: Float
+        var schwarzschildMode: Int32
     }
 
     var device: MTLDevice!
@@ -58,7 +59,7 @@ class BhiMixer {
     var mmaDataTexture: MTLTexture!
     var mmaLutTexture: MTLTexture!
 
-    var filterParameters = FilterParameters(spaceTimeMode: 0, sourceMode: 1, d: 1000, a: 0, thetas: 0)
+    var filterParameters = FilterParameters(spaceTimeMode: 0, sourceMode: 1, d: 1000, a: 0, thetas: 0, schwarzschildMode: 0)
     var needsNewLutTexture = true
     
     var filterParametersBuffer: MTLBuffer

@@ -136,6 +136,20 @@ struct MultiCamView: UIViewControllerRepresentable {
                 activateButton.alpha = 0
             })
         }
+        
+        @objc func handleToggleButton(_ sender: UIButton) {
+            let currSchwarzschildMode = mixer.filterParameters.schwarzschildMode
+            if (currSchwarzschildMode == 0) {
+                mixer.filterParameters.schwarzschildMode = 1
+                mixer.filterParameters.sourceMode = 1
+                multiCamViewController?.schwarzschildModeLabel.text = "Old Mode"
+            } else {
+                mixer.filterParameters.schwarzschildMode = 0
+                mixer.filterParameters.sourceMode = 0
+                multiCamViewController?.schwarzschildModeLabel.text = "New Mode"
+            }
+            mixer.needsNewLutTexture = true
+        }
 
         @objc func spinStepperValueChanged(_ sender: UIStepper) { 
             multiCamViewController!.spinReadoutLabel.text = "Black hole spin: \(getCurrSpinValue() * 100)%"
@@ -199,8 +213,11 @@ struct MultiCamView: UIViewControllerRepresentable {
             mixer.filterParameters.spaceTimeMode = 1
             mixer.filterParameters.d = getCurrDistanceValue()
             
-            multiCamViewController?.fovSegmentedControl.isEnabled = true
+            multiCamViewController?.fovSegmentedControl.isEnabled = false
 
+            multiCamViewController?.schwarzschildModeLabel.text = "New Mode"
+            mixer.filterParameters.schwarzschildMode = 0
+            mixer.filterParameters.sourceMode = 0
             mixer.needsNewLutTexture = true
         }
         func handleKerrSelection() { 
@@ -311,6 +328,7 @@ struct MultiCamView: UIViewControllerRepresentable {
         viewController.cameraFlipButton.addTarget(context.coordinator,
                                                   action: #selector(context.coordinator.handleCameraFlipButton(_:)),
                                                   for: .touchUpInside)
+        viewController.toggleButton.addTarget(context.coordinator, action: #selector(context.coordinator.handleToggleButton(_:)), for: .touchUpInside)
         
         viewController.spinStepper.tintColor = UIColor.red
         viewController.spinStepper.addTarget(context.coordinator,
@@ -377,6 +395,7 @@ class MultiCamViewController: UIViewController {
 
     @IBOutlet weak var spinReadoutLabel: UILabel!
     @IBOutlet weak var distanceReadoutLabel: UILabel!
+    @IBOutlet weak var schwarzschildModeLabel: UILabel!
 
     @IBOutlet weak var controlsButton: UIButton!
     @IBOutlet weak var pipButton: UIButton!
@@ -384,6 +403,7 @@ class MultiCamViewController: UIViewController {
     @IBOutlet weak var screenshotButton: UIButton!
     @IBOutlet weak var descriptionButton: UIButton!
     @IBOutlet weak var activateButton: UIButton!
+    @IBOutlet weak var toggleButton: UIButton!
 
     @IBOutlet weak var spacetimeSegmentedControl: UISegmentedControl!
     @IBOutlet weak var fovSegmentedControl: UISegmentedControl!

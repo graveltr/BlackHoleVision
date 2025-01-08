@@ -121,6 +121,17 @@ License: This app includes a port of the GNU Scientific Library's (GSL) implemen
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ICN-Oz-opM">
+                                <rect key="frame" x="16" y="388.66666666666669" width="76" height="35"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Toggle"/>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o2s-Hg-aVc">
+                                <rect key="frame" x="16" y="439.66666666666669" width="42" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -130,6 +141,7 @@ License: This app includes a port of the GNU Scientific Library's (GSL) implemen
                             <constraint firstItem="EXP-M8-Mff" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="1iJ-s8-Qiq"/>
                             <constraint firstAttribute="bottomMargin" secondItem="DGt-gs-ky1" secondAttribute="bottom" constant="135" id="A5o-Sh-k5s"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="Lei-n3-xYB" secondAttribute="bottom" constant="135" id="Gdo-Qd-pcF"/>
+                            <constraint firstItem="ICN-Oz-opM" firstAttribute="centerY" secondItem="5EZ-qb-Rvc" secondAttribute="centerY" id="IfR-2C-t2I"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="X5x-F8-QNU" secondAttribute="trailing" constant="40" id="JjQ-XB-ZT9"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="Lei-n3-xYB" secondAttribute="trailing" constant="20" id="KJk-f2-WVu"/>
                             <constraint firstItem="rfq-G0-ZzP" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="NH2-5I-PYg"/>
@@ -145,12 +157,15 @@ License: This app includes a port of the GNU Scientific Library's (GSL) implemen
                             <constraint firstItem="dZR-pb-g9a" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="Z8C-Kh-5Oy"/>
                             <constraint firstItem="QYR-JU-smz" firstAttribute="top" secondItem="X5x-F8-QNU" secondAttribute="bottom" constant="15" id="ZID-Tc-kFp"/>
                             <constraint firstItem="QYR-JU-smz" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="a8F-T5-ByE"/>
+                            <constraint firstItem="o2s-Hg-aVc" firstAttribute="top" secondItem="ICN-Oz-opM" secondAttribute="bottom" constant="16.329999999999998" id="dBK-eo-3z3"/>
                             <constraint firstItem="DGt-gs-ky1" firstAttribute="top" secondItem="rfq-G0-ZzP" secondAttribute="bottom" constant="8" id="dZR-pD-2OF"/>
                             <constraint firstItem="X5x-F8-QNU" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="40" id="doM-oi-LqV"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="7kC-cx-S1p" secondAttribute="bottom" constant="16" id="e0S-rJ-81B"/>
+                            <constraint firstItem="o2s-Hg-aVc" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="16" id="eLM-hD-1n5"/>
                             <constraint firstItem="X5x-F8-QNU" firstAttribute="top" secondItem="uky-F8-Te3" secondAttribute="bottom" constant="15" id="euu-Ng-PvD"/>
                             <constraint firstItem="Lei-n3-xYB" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="20" id="fgx-1k-QBq"/>
                             <constraint firstItem="Lei-n3-xYB" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="7" id="ipY-NZ-Z8G"/>
+                            <constraint firstItem="ICN-Oz-opM" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" constant="16" id="k3e-xb-eEI"/>
                             <constraint firstItem="dZR-pb-g9a" firstAttribute="top" secondItem="Lei-n3-xYB" secondAttribute="bottom" constant="43" id="m3M-WD-Juu"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="bottom" secondItem="sWv-We-cV7" secondAttribute="bottom" constant="18" id="mrg-E8-TN3"/>
                             <constraint firstItem="sWv-We-cV7" firstAttribute="top" secondItem="QYR-JU-smz" secondAttribute="bottom" constant="24" id="oz5-h1-xlZ"/>
@@ -170,10 +185,12 @@ License: This app includes a port of the GNU Scientific Library's (GSL) implemen
                         <outlet property="fovSegmentedControl" destination="sWv-We-cV7" id="4GY-rf-L2d"/>
                         <outlet property="infoTextView" destination="Lei-n3-xYB" id="Hh3-BV-VOQ"/>
                         <outlet property="pipButton" destination="VmY-Il-MLf" id="Iyg-zk-la5"/>
+                        <outlet property="schwarzschildModeLabel" destination="o2s-Hg-aVc" id="QlY-ur-Zpf"/>
                         <outlet property="screenshotButton" destination="zXu-sr-8mj" id="61O-lW-YZx"/>
                         <outlet property="spacetimeSegmentedControl" destination="QYR-JU-smz" id="cgH-VN-4rO"/>
                         <outlet property="spinReadoutLabel" destination="rfq-G0-ZzP" id="12w-on-gWf"/>
                         <outlet property="spinStepper" destination="DGt-gs-ky1" id="P7l-42-UCg"/>
+                        <outlet property="toggleButton" destination="ICN-Oz-opM" id="nCl-2N-q78"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
