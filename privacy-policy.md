@@ -22,8 +22,7 @@ Black Hole Vision does not use any third-party services that collect user data.
 
 ## Children’s Privacy
 
-Black Hole Vision is not intended for use by children under the age of 13. We
-do not knowingly collect any personal data from children under 13.
+We do not knowingly collect any personal data from children under 13.
 
 ## Changes to This Privacy Policy
 
