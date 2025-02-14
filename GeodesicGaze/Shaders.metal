@@ -94,6 +94,23 @@ float2 pixelToScreen(float2 pixelCoords) {
     // return 0.2 * pixelCoords;
 }
 
+float distortb(float bc, float bouter, float b) {
+    assert(bc < bouter);
+    
+    float slope = 0.5;
+    float yint = bc - slope * bc;
+    float yshift = yint + slope * bouter;
+    float xshift = bouter;
+
+    if (b < bc) {
+        return b;
+    } else if (b < bouter) {
+        return yint + slope * b;
+    } else {
+        return (b - xshift) * (b - xshift) + yshift;
+    }
+}
+
 LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateScreenMode(float2 inCoord, int sourceMode, float M, float d) {
     LenseTextureCoordinateResult result;
     
@@ -115,16 +132,19 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateScreenMode(float
     float rho = sqrt(imgx * imgx + imgy * imgy);
     
     // The diameter of the critical curve as a percentage of the height
-    float criticalCurveDiameterPct = 0.01;
+    float criticalCurveDiameterPct = 0.05;
     
     float criticalCurveDiameterInPixelUnits = criticalCurveDiameterPct * backTextureWidth;
     
     // Once the size of the critical curve on the screen is chosen, this fixes
     // the conversion factor from pixel units on the screen to physical distances
     // since the critical curve has a radius of 3 sqrt(3) M.
-    float pixelToPhysicalDistance = (3.0 * sqrt(3.0) * M) / criticalCurveDiameterInPixelUnits;
+    float bc = 3.0 * sqrt(3.0) * M;
+    float pixelToPhysicalDistance = bc / criticalCurveDiameterInPixelUnits;
     
     float b = (1.0 / 2.0) * rho * pixelToPhysicalDistance;
+    b = distortb(bc, 1.1 * bc, b);
+    
     SchwarzschildLenseResult lenseResult = schwarzschildLense(M, ro, rs, b);
     if (lenseResult.status == FAILURE) {
         result.status = ERROR;
@@ -165,14 +185,20 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateScreenMode(float
     
     // This has a sign (inherited from btilde), as it should. Indicates whether
     // we move up or down on the ray of constant psi.
+    pixelToPhysicalDistance = 50.0 * pixelToPhysicalDistance;
     float rhotilde = 2.0 * (1.0 / pixelToPhysicalDistance) * btilde;
     
+    // float minPixelRadius = 1080.0 / 2.0;
+    // float scale = 0.1;
+    // rhotilde = minPixelRadius * (2.0 / M_PI_F) * atan(scale * rhotilde);
+
     float imgxtilde = rhotilde * cos(psi);
     float imgytilde = rhotilde * sin(psi);
     
     float2 transformedRelativePixelCoords = float2(imgytilde, imgxtilde);
     float2 transformedPixelCoords = transformedRelativePixelCoords + center;
     float2 transformedTexCoord = transformedPixelCoords / float2(backTextureWidth, backTextureHeight);
+    
 
     // Ensure that the texture coordinate is inbounds
     if (transformedTexCoord.x < 0.0 || 1.0 < transformedTexCoord.x ||
