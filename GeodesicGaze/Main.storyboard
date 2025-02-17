@@ -81,13 +81,11 @@
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lei-n3-xYB">
                                 <rect key="frame" x="20" y="57" width="335" height="586"/>
                                 <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <string key="text">Black Hole Vision simulates the gravitational lensing effects of a black hole and applies these effects to the video feeds from an iPhone's cameras. The application implements the lensing equations derived from general relativity to create a physically accurate effect.
+                                <mutableString key="text">Black Hole Vision simulates the gravitational lensing effects of a black hole and applies these effects to the video feeds from an iPhone's cameras. The application implements the lensing equations derived from general relativity to create a physically accurate effect.
 
 The app can either put a black hole in front of the main camera to show your environment as lensed by a black hole, or it can be used in "selfie" mode with the black hole in front of the front-facing camera to show you a lensed version of yourself.
 
-There are several additional options you can select when using the app. The first lensing option you can select is "Static black hole". In this mode, we simulate a non-rotating (Schwarzschild) black hole. There are two submodes that change the simulated field-of-view (FOV): "Realistic FOV" and "Full FOV". The realistic FOV mode takes into account the finite FOV of the iPhone cameras, leading to a multi-lobed dark patch in the center of the screen. This patch includes both the "black hole shadow" (light rays that end up falling into the black hole) and "blind spots" (directions that lie outside the FOV of both the front-and-rear-facing cameras). The full FOV mode acts as if the cameras have an infinite FOV such that they cover all angles. The result is a single, circular black hole shadow at the center of the screen.
-
-Next, you can select the "Rotating black hole" mode, which adds rotation (spin) to the black hole. Additionally, you can augment the rotational speed of the black hole, which is given as a percentage of the maximal spin.
+There are several additional options you can select when using the app. The first lensing option you can select is "Static black hole". In this mode, we simulate a non-rotating (Schwarzschild) black hole. Next, you can select the "Rotating black hole" mode, which adds rotation (spin) to the black hole. Additionally, you can augment the rotational speed of the black hole, which is given as a percentage of the maximal spin.
 
 In a nutshell, the app computes a map from texture coordinate to texture coordinate. This map is itself stored as a texture --- to obtain the value of the map on texture coordinates (x,y), one samples the texture at (x,y) and the resulting float4 contains the outputs (x',y') as well as a status code. When the user selects the "Static black hole" mode, this texture is computed on the GPU and cached. The “Rotating black hole" textures, however, have been precomputed in Mathematica, due to the need for double precision floating point math, which is not natively available in Apple's Metal shading language.
 
@@ -95,7 +93,7 @@ The source code, including the Mathematica notebook, can be found here at the Gi
 
 The code was written at Vanderbilt University by Trevor Gravely with input from Dr. Roman Berens and Prof. Alex Lupsasca. This project was supported by CAREER award PHY-2340457 and grant AST-2307888 from the National Science Foundation.
 
-License: This app includes a port of the GNU Scientific Library's (GSL) implementation of Jacobi elliptic functions and the elliptic integrals to Metal. It is licensed under the GNU General Public License v3.0 (GPL-3.0). You can view the full license and obtain a copy of the source code at the GitHub user "graveltr" under the repository "BlackHoleVision".</string>
+License: This app includes a port of the GNU Scientific Library's (GSL) implementation of Jacobi elliptic functions and the elliptic integrals to Metal. It is licensed under the GNU General Public License v3.0 (GPL-3.0). You can view the full license and obtain a copy of the source code at the GitHub user "graveltr" under the repository "BlackHoleVision".</mutableString>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
