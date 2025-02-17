@@ -50,11 +50,14 @@ struct MultiCamView: UIViewControllerRepresentable {
         }
         
         @objc func handleControlsButton(_ sender: UIButton) {
-            multiCamViewController!.fovSegmentedControl.isHidden = !(multiCamViewController!.fovSegmentedControl.isHidden)
             multiCamViewController!.spacetimeSegmentedControl.isHidden = !(multiCamViewController!.spacetimeSegmentedControl.isHidden)
             if mixer.filterParameters.spaceTimeMode == 2 {
                 multiCamViewController!.spinStepper.isHidden = !(multiCamViewController!.spinStepper.isHidden)
                 multiCamViewController!.spinReadoutLabel.isHidden = !(multiCamViewController!.spinReadoutLabel.isHidden)
+            }
+            if mixer.filterParameters.spaceTimeMode == 1 {
+                multiCamViewController!.distanceSlider.isHidden = !(multiCamViewController!.distanceSlider.isHidden)
+                multiCamViewController!.distanceReadoutLabel.isHidden = !(multiCamViewController!.distanceReadoutLabel.isHidden)
             }
         }
         
@@ -137,21 +140,7 @@ struct MultiCamView: UIViewControllerRepresentable {
             })
         }
         
-        @objc func handleToggleButton(_ sender: UIButton) {
-            let currSchwarzschildMode = mixer.filterParameters.schwarzschildMode
-            if (currSchwarzschildMode == 0) {
-                mixer.filterParameters.schwarzschildMode = 1
-                mixer.filterParameters.sourceMode = 1
-                multiCamViewController?.schwarzschildModeLabel.text = "Old Mode"
-            } else {
-                mixer.filterParameters.schwarzschildMode = 0
-                mixer.filterParameters.sourceMode = 0
-                multiCamViewController?.schwarzschildModeLabel.text = "New Mode"
-            }
-            mixer.needsNewLutTexture = true
-        }
-
-        @objc func spinStepperValueChanged(_ sender: UIStepper) { 
+        @objc func spinStepperValueChanged(_ sender: UIStepper) {
             multiCamViewController!.spinReadoutLabel.text = "Black hole spin: \(getCurrSpinValue() * 100)%"
             mixer.filterParameters.a = getCurrSpinValue()
             mixer.needsNewLutTexture = true
@@ -195,8 +184,6 @@ struct MultiCamView: UIViewControllerRepresentable {
             multiCamViewController?.distanceReadoutLabel.isHidden = true
             multiCamViewController?.distanceSlider.isHidden = true
 
-            multiCamViewController?.fovSegmentedControl.selectedSegmentIndex = 0
-            multiCamViewController?.fovSegmentedControl.isEnabled = false
             mixer.filterParameters.sourceMode = 1
 
             mixer.filterParameters.spaceTimeMode = 0
@@ -212,10 +199,7 @@ struct MultiCamView: UIViewControllerRepresentable {
 
             mixer.filterParameters.spaceTimeMode = 1
             mixer.filterParameters.d = getCurrDistanceValue()
-            
-            multiCamViewController?.fovSegmentedControl.isEnabled = false
 
-            multiCamViewController?.schwarzschildModeLabel.text = "New Mode"
             mixer.filterParameters.schwarzschildMode = 0
             mixer.filterParameters.sourceMode = 0
             mixer.needsNewLutTexture = true
@@ -232,8 +216,6 @@ struct MultiCamView: UIViewControllerRepresentable {
             mixer.filterParameters.spaceTimeMode = 2
             mixer.filterParameters.a = getCurrSpinValue()
             
-            multiCamViewController?.fovSegmentedControl.selectedSegmentIndex = 1
-            multiCamViewController?.fovSegmentedControl.isEnabled = false
             mixer.filterParameters.sourceMode = 0
 
             mixer.needsNewLutTexture = true
@@ -328,7 +310,6 @@ struct MultiCamView: UIViewControllerRepresentable {
         viewController.cameraFlipButton.addTarget(context.coordinator,
                                                   action: #selector(context.coordinator.handleCameraFlipButton(_:)),
                                                   for: .touchUpInside)
-        viewController.toggleButton.addTarget(context.coordinator, action: #selector(context.coordinator.handleToggleButton(_:)), for: .touchUpInside)
         
         viewController.spinStepper.tintColor = UIColor.red
         viewController.spinStepper.addTarget(context.coordinator,
@@ -348,6 +329,7 @@ struct MultiCamView: UIViewControllerRepresentable {
         
         viewController.spinStepper.isHidden = true
         viewController.fovSegmentedControl.isEnabled = false
+        viewController.fovSegmentedControl.isHidden = true
         viewController.distanceSlider.isHidden = true
         viewController.distanceReadoutLabel.isHidden = true
         
@@ -378,7 +360,7 @@ struct MultiCamView: UIViewControllerRepresentable {
 
         viewController.spacetimeSegmentedControl.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10)], for: .normal)
         viewController.fovSegmentedControl.setTitleTextAttributes([NSAttributedString.Key.font: UIFont.systemFont(ofSize: 10)], for: .normal)
-        viewController.distanceReadoutLabel.font = UIFont.systemFont(ofSize: 12)
+        // viewController.distanceReadoutLabel.font = UIFont.systemFont(ofSize: 12)
 
         return viewController
     }
@@ -395,7 +377,6 @@ class MultiCamViewController: UIViewController {
 
     @IBOutlet weak var spinReadoutLabel: UILabel!
     @IBOutlet weak var distanceReadoutLabel: UILabel!
-    @IBOutlet weak var schwarzschildModeLabel: UILabel!
 
     @IBOutlet weak var controlsButton: UIButton!
     @IBOutlet weak var pipButton: UIButton!
@@ -403,7 +384,6 @@ class MultiCamViewController: UIViewController {
     @IBOutlet weak var screenshotButton: UIButton!
     @IBOutlet weak var descriptionButton: UIButton!
     @IBOutlet weak var activateButton: UIButton!
-    @IBOutlet weak var toggleButton: UIButton!
 
     @IBOutlet weak var spacetimeSegmentedControl: UISegmentedControl!
     @IBOutlet weak var fovSegmentedControl: UISegmentedControl!

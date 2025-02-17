@@ -111,6 +111,12 @@ float distortb(float bc, float bouter, float b) {
     }
 }
 
+/*
+ * In this set up, we "project" the image plane onto the screen (the plane in spacetime).
+ * A location on the screen selects a value of b. We trace the ray out to ro and then
+ * imagine that it actually hits a perpendicular screen (approximately true if d is large).
+ * So this is the screen to screen cartoon.
+ */
 LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateScreenMode(float2 inCoord, int sourceMode, float M, float d) {
     LenseTextureCoordinateResult result;
     
@@ -131,8 +137,14 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateScreenMode(float
     float psi = atan2(imgy, imgx);
     float rho = sqrt(imgx * imgx + imgy * imgy);
     
-    // The diameter of the critical curve as a percentage of the height
-    float criticalCurveDiameterPct = 0.05;
+    // The percentage of max distance that the observer is currently located at.
+    // The distance slider ranges from 100 M to 1000 M.
+    float percentDistant = d / (1000.0 - 100.0);
+    
+    // The diameter of the critical curve as a percentage of the height.
+    float maxDiameterPct = 0.05;
+    float minDiameterPct = 0.01;
+    float criticalCurveDiameterPct = maxDiameterPct - percentDistant * (maxDiameterPct - minDiameterPct);
     
     float criticalCurveDiameterInPixelUnits = criticalCurveDiameterPct * backTextureWidth;
     
@@ -143,7 +155,6 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateScreenMode(float
     float pixelToPhysicalDistance = bc / criticalCurveDiameterInPixelUnits;
     
     float b = (1.0 / 2.0) * rho * pixelToPhysicalDistance;
-    b = distortb(bc, 1.1 * bc, b);
     
     SchwarzschildLenseResult lenseResult = schwarzschildLense(M, ro, rs, b);
     if (lenseResult.status == FAILURE) {
@@ -154,64 +165,54 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateScreenMode(float
         return result;
     }
     
-    // This angle is already normalized to lie between 0 and 2 pi.
-    float phiS = lenseResult.phif;
+    float3 vsSpherical = float3(rs, M_PI_F / 2.0, lenseResult.phif);
+    float3 vsCartesian = sphericalToCartesian(vsSpherical);
     
-    // There is a measure zero set of screen locations that eject "vertically" from the black hole
-    // such that they never intersect our screens.
-    if (fEqual(phiS, M_PI_F / 2.0) || fEqual(phiS, 3.0 * M_PI_F / 2.0)) {
-        result.status = OUTSIDE_FOV;
-        return result;
-    }
+    // Rotation by psi about the x-axis
+    // Aligns the plane of motion with the equatorial plane
+    float3 r1 = float3(1.0, 0.0,        0.0);
+    float3 r2 = float3(0.0, cos(psi),   -1.0 * sin(psi));
+    float3 r3 = float3(0.0, sin(psi),   cos(psi));
+
+    // Matrix multiplication by the matrix with rows r1-3
+    float3 vsHatCartesian = float3(dot(r1, vsCartesian),
+                                   dot(r2, vsCartesian),
+                                   dot(r3, vsCartesian));
     
-    float btilde;
-    bool isRearFacing;
+    // The spherical coordinates of ray's intersection with the source sphere
+    // in the fixed, reference frame.
+    float3 vsHatSpherical = cartesianToSpherical(vsHatCartesian);
+    
+    float phifNormalized = normalizeAngle(vsHatSpherical.z);
+    float thetaf = vsHatSpherical.y;
     
     float oneTwoBdd = M_PI_F / 2.0;
     float threeFourBdd = 3.0 * M_PI_F / 2.0;
-    // quadrant I or IV
-    if ((0.0 <= phiS && phiS <= oneTwoBdd) ||
-        (threeFourBdd <= phiS && phiS <= 2.0 * M_PI_F)) {
-        btilde = (ro / 2.0) * tan(phiS);
-        isRearFacing = false;
-    } else { // quadrant II or III
-        // This minus sign ensures that as phiS goes from pi / 2 to
-        // 3 pi / 2, btilde goes from positive to negative (plot -tan over this range).
-        // This is the correct behavior since btilde should be positive in the 2nd quadrant
-        // and negative in the 3rd quadrant.
-        btilde = -1.0 * (ro / 2.0) * tan(phiS);
-        isRearFacing = true;
+    
+    float v = thetaf / M_PI_F;
+    float u = 0.0;
+    
+    // If in quadrant I
+    if (0.0 <= phifNormalized && phifNormalized <= oneTwoBdd) {
+        u = 0.5 + 0.5 * (phifNormalized / oneTwoBdd);
+        result.status = SUCCESS_FRONT_TEXTURE;
+    } else if (threeFourBdd <= phifNormalized && phifNormalized <= 2.0 * M_PI_F) { // quadrant IV
+        u = 0.5 * ((phifNormalized - threeFourBdd) / (2.0 * M_PI_F - threeFourBdd));
+        result.status = SUCCESS_FRONT_TEXTURE;
+    } else { // II or III
+        u = (phifNormalized - oneTwoBdd) / (threeFourBdd - oneTwoBdd);
+        result.status = SUCCESS_BACK_TEXTURE;
     }
+    float2 transformedTexCoord = float2(flipTextureCoord(v), flipTextureCoord(u));
     
-    // This has a sign (inherited from btilde), as it should. Indicates whether
-    // we move up or down on the ray of constant psi.
-    pixelToPhysicalDistance = 50.0 * pixelToPhysicalDistance;
-    float rhotilde = 2.0 * (1.0 / pixelToPhysicalDistance) * btilde;
-    
-    // float minPixelRadius = 1080.0 / 2.0;
-    // float scale = 0.1;
-    // rhotilde = minPixelRadius * (2.0 / M_PI_F) * atan(scale * rhotilde);
-
-    float imgxtilde = rhotilde * cos(psi);
-    float imgytilde = rhotilde * sin(psi);
-    
-    float2 transformedRelativePixelCoords = float2(imgytilde, imgxtilde);
-    float2 transformedPixelCoords = transformedRelativePixelCoords + center;
-    float2 transformedTexCoord = transformedPixelCoords / float2(backTextureWidth, backTextureHeight);
-    
-
-    // Ensure that the texture coordinate is inbounds
-    if (transformedTexCoord.x < 0.0 || 1.0 < transformedTexCoord.x ||
-        transformedTexCoord.y < 0.0 || 1.0 < transformedTexCoord.y) {
-        result.status = OUTSIDE_FOV;
-        return result;
-    }
-
     result.coord = transformedTexCoord;
-    result.status = (isRearFacing) ? SUCCESS_BACK_TEXTURE : SUCCESS_FRONT_TEXTURE;
+
     return result;
 }
 
+/*
+ * The original pinhole setup. With FULL and ACTUAL FOV modes.
+ */
 LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord, int sourceMode, float M, float d) {
     LenseTextureCoordinateResult result;
     
@@ -312,128 +313,6 @@ LenseTextureCoordinateResult schwarzschildLenseTextureCoordinate(float2 inCoord,
     float rhotilde = f * tan(varphitilde);
     // Again, the swapping
     float2 transformedImagePlaneCoords = (ccw ? -1.0 : 1.0) * float2(rhotilde * sin(psi), rhotilde * cos(psi));
-    
-    float2 transformedRelativePixelCoords = transformedImagePlaneCoords / lengthPerPixel;
-    float2 transformedPixelCoords = transformedRelativePixelCoords + center;
-    float2 transformedTexCoord = transformedPixelCoords / float2(backTextureWidth, backTextureHeight);
-
-    // Ensure that the texture coordinate is inbounds
-    if (transformedTexCoord.x < 0.0 || 1.0 < transformedTexCoord.x ||
-        transformedTexCoord.y < 0.0 || 1.0 < transformedTexCoord.y) {
-        result.status = OUTSIDE_FOV;
-        return result;
-    }
-
-    result.coord = transformedTexCoord;
-    result.status = SUCCESS;
-    return result;
-}
-
-LenseTextureCoordinateResult schwarzschildLenseTextureCoordinateOther(float2 inCoord, int sourceMode, float M, float d) {
-    LenseTextureCoordinateResult result;
-    
-    /*
-     * The convention we use is to call the camera screen the "source" since we
-     * ray trace from this location back into the geometry.
-     */
-    float backTextureWidth = 1920.0;
-    float backTextureHeight = 1080.0;
-    
-    // We let rs and ro be large in this set up.
-    // This will allow for the usage of an approximation to the
-    // elliptic integrals during lensing.
-    float rs = d;
-    float ro = rs;
-    
-    // Calculate the pixel coordinates of the current fragment
-    float2 pixelCoords = inCoord * float2(backTextureWidth, backTextureHeight);
-    
-    // Calculate the pixel coordinates of the center of the image
-    float2 center = float2(backTextureWidth / 2.0, backTextureHeight / 2.0);
-    
-    // Place the center at the origin
-    float2 relativePixelCoords = pixelCoords - center;
-    
-    // Convert the pixel coordinates to coordinates in the image plane
-    float lengthPerPixel = 0.2;
-    float2 imagePlaneCoords;
-    if (sourceMode == FULL_FOV_MODE) {
-        imagePlaneCoords = pixelToScreen(relativePixelCoords);
-    } else {
-        imagePlaneCoords = lengthPerPixel * relativePixelCoords;
-    }
-
-    // Obtain the polar coordinates of this image plane location
-    float b = length(imagePlaneCoords);
-    // Notice the swapping ... the first texture coordinate is vertical
-    float psi = atan2(imagePlaneCoords.x, imagePlaneCoords.y);
-
-    SchwarzschildLenseResult lenseResult = schwarzschildLense(M, ro, rs, b);
-    if (lenseResult.status == FAILURE) {
-        result.status = ERROR;
-        return result;
-    } else if (lenseResult.status == EMITTED_FROM_BLACK_HOLE) {
-        result.status = EMITTED_FROM_BLACK_HOLE;
-        return result;
-    }
-    float varphitilde = lenseResult.varphitilde;
-    bool ccw = lenseResult.ccw;
-    
-    if (sourceMode == FULL_FOV_MODE) {
-        float3 vsSpherical = float3(rs, M_PI_F / 2.0, lenseResult.phif);
-        float3 vsCartesian = sphericalToCartesian(vsSpherical);
-        
-        // Rotation by psi about the x-axis
-        // Aligns the plane of motion with the equatorial plane
-        float3 r1 = float3(1.0, 0.0,        0.0);
-        float3 r2 = float3(0.0, cos(psi),   -1.0 * sin(psi));
-        float3 r3 = float3(0.0, sin(psi),   cos(psi));
-
-        // Matrix multiplication by the matrix with rows r1-3
-        float3 vsHatCartesian = float3(dot(r1, vsCartesian),
-                                       dot(r2, vsCartesian),
-                                       dot(r3, vsCartesian));
-        
-        // The spherical coordinates of ray's intersection with the source sphere
-        // in the fixed, reference frame.
-        float3 vsHatSpherical = cartesianToSpherical(vsHatCartesian);
-        
-        float phifNormalized = normalizeAngle(vsHatSpherical.z);
-        float thetaf = vsHatSpherical.y;
-        
-        float oneTwoBdd = M_PI_F / 2.0;
-        float threeFourBdd = 3.0 * M_PI_F / 2.0;
-        
-        float v = thetaf / M_PI_F;
-        float u = 0.0;
-        
-        // If in quadrant I
-        if (0.0 <= phifNormalized && phifNormalized <= oneTwoBdd) {
-            u = 0.5 + 0.5 * (phifNormalized / oneTwoBdd);
-            result.status = SUCCESS_FRONT_TEXTURE;
-        } else if (threeFourBdd <= phifNormalized && phifNormalized <= 2.0 * M_PI_F) { // quadrant IV
-            u = 0.5 * ((phifNormalized - threeFourBdd) / (2.0 * M_PI_F - threeFourBdd));
-            result.status = SUCCESS_FRONT_TEXTURE;
-        } else { // II or III
-            u = (phifNormalized - oneTwoBdd) / (threeFourBdd - oneTwoBdd);
-            result.status = SUCCESS_BACK_TEXTURE;
-        }
-        // NOTICE THAT u and v are swapped! Same reason as before.
-        // TODO: understand why the flips are needed ... probably take LOS -> -LOS
-        float2 transformedTexCoord = float2(flipTextureCoord(v), flipTextureCoord(u));
-        
-        result.coord = transformedTexCoord;
-
-        return result;
-    }
-
-    // Unwind through the inverse transformation to texture coordinates.
-    // Note that because ro = rs, we don't need to worry about the front-facing
-    // camera.
-    float btilde = ro * sin(varphitilde);
-    
-    // Again, the swapping
-    float2 transformedImagePlaneCoords = (ccw ? -1.0 : 1.0) * float2(btilde * sin(psi), btilde * cos(psi));
     
     float2 transformedRelativePixelCoords = transformedImagePlaneCoords / lengthPerPixel;
     float2 transformedPixelCoords = transformedRelativePixelCoords + center;
@@ -644,15 +523,12 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
     
     LenseTextureCoordinateResult result;
     if (uniforms.spaceTimeMode == 0) {
-        result = flatspaceLenseTextureCoordinate(originalCoord, uniforms.sourceMode);
+        result = flatspaceLenseTextureCoordinate(originalCoord, ACTUAL_FOV_MODE);
     } else if (uniforms.spaceTimeMode == 1) {
-        if (uniforms.schwarzschildMode == 0) {
-            result = schwarzschildLenseTextureCoordinateScreenMode(originalCoord, uniforms.sourceMode, 1.0, 1000.0);
-        } else {
-            result = schwarzschildLenseTextureCoordinate(originalCoord, uniforms.sourceMode, 1.0, 200.0);
-        }
+        result = schwarzschildLenseTextureCoordinateScreenMode(originalCoord, FULL_FOV_MODE, 1.0, uniforms.d);
+        //result = schwarzschildLenseTextureCoordinate(originalCoord, FULL_FOV_MODE, 1.0, uniforms.d);
     } else if (uniforms.spaceTimeMode == 2) {
-        result = kerrLenseTextureCoordinate(originalCoord, uniforms.sourceMode, uniforms.d, uniforms.a);
+        result = kerrLenseTextureCoordinate(originalCoord, FULL_FOV_MODE, uniforms.d, uniforms.a);
     } else {
         assert(false);
     }
@@ -667,7 +543,7 @@ kernel void precomputeLut(texture2d<float, access::write> lut   [[texture(0)]],
             lut.write(float4(result.coord, 0.0, 1.0), gid); // 01
         }
         if (result.status == ERROR) {
-            lut.write(float4(0.0, 0.0, 1.0, 0.0), gid); // 10
+            lut.write(float4(0.0, 0.0, 0.5, 0.5), gid); // 10
         }
         if (result.status == EMITTED_FROM_BLACK_HOLE) {
             lut.write(float4(0.0, 0.0, 1.0, 1.0), gid); // 11
@@ -782,6 +658,7 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         float2 inFrontPipAppleTextureCoords = fromStandardTextureCoordsToAppleTextureCoords(inFrontPipStandardTextureCoords);
         if (    0.0 < inFrontPipAppleTextureCoords.x && inFrontPipAppleTextureCoords.x < 1.0
             &&  0.0 < inFrontPipAppleTextureCoords.y && inFrontPipAppleTextureCoords.y < 1.0) {
+            inFrontPipAppleTextureCoords.y = flipTextureCoord(inFrontPipAppleTextureCoords.y);
             float3 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, inFrontPipAppleTextureCoords);
             return float4(rgb, 1.0);
         }
@@ -810,12 +687,14 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
             if (isBlackHoleInFront) {
                 rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
             } else {
+                transformedTexCoord.y = flipTextureCoord(transformedTexCoord.y);
                 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, transformedTexCoord);
             }
             return float4(rgb, 1.0);
         } else if (fEqual(statusCode[0], 0.0) && fEqual(statusCode[1], 1.0)) {
             float3 rgb;
             if (isBlackHoleInFront) {
+                transformedTexCoord.y = flipTextureCoord(transformedTexCoord.y);
                 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, transformedTexCoord);
             } else {
                 rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
@@ -826,7 +705,7 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
         } else if (fEqual(statusCode[0], 1.0) && fEqual(statusCode[1], 1.0)) {
             return float4(0.0, 0.0, 0.0, 1.0);
         } else if (fEqual(statusCode[0], 0.5) && fEqual(statusCode[1], 0.5)) {
-            return float4(0.0, 0.0, 0.0, 1.0);
+            return float4(0.0, 0.0, 1.0, 1.0);
         } else {
             return float4(1.0, 1.0, 1.0, 1.0);
         }
@@ -838,6 +717,7 @@ fragment float4 preComputedFragmentShader(VertexOut in [[stage_in]],
             if (isBlackHoleInFront) {
                 rgb = sampleYUVTexture(backYTexture, backUVTexture, transformedTexCoord);
             } else {
+                transformedTexCoord.y = flipTextureCoord(transformedTexCoord.y);
                 rgb = sampleYUVTexture(frontYTexture, frontUVTexture, transformedTexCoord);
             }
             return float4(rgb, 1.0);
